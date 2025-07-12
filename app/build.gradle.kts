@@ -7,9 +7,8 @@ plugins {
     alias(libs.plugins.hiltAndroid)
     alias(libs.plugins.kapt)
     alias(libs.plugins.google.gms.google.services)
-
-    id("kotlin-parcelize")
-    id("com.google.devtools.ksp")
+    alias(libs.plugins.parcelize)
+    alias(libs.plugins.ksp)
 }
 
 android {

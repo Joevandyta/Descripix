@@ -12,7 +12,7 @@ lifecycleRuntimeKtx = "2.9.0"
 activityCompose = "1.10.1"
 composeBom = "2025.06.00"
 hilt = "2.52"
-googleDevtoolsKsp = "2.0.0-1.0.23"
+googleDevtoolsKsp = "1.9.21-1.0.15"
 kapt-version = "2.0.0"
 coilCompose = "2.2.2"
 lottieCompose = "4.0.0"
@@ -86,3 +86,4 @@ hiltAndroid = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kapt-version" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 google-gms-google-services = { id = "com.google.gms.google-services", version.ref = "googleGmsGoogleServices" }
+parcelize = { id = "kotlin-parcelize"}

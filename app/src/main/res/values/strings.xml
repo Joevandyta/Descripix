@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name" translatable="false">Descripix</string>
-    <string name="string_login" translatable="false">Login</string>
     <string name="logout" translatable="false">Logout</string>
 <!--    <string name="caption">Caption</string>-->
     <string name="Home_fragment_guest_view">SIGN IN TO SAVE AND VIEW CAPTIONS</string>

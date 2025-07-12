@@ -6,6 +6,6 @@ plugins {
     alias(libs.plugins.hiltAndroid) apply false
     alias(libs.plugins.kapt) apply false
     alias(libs.plugins.google.gms.google.services) apply false
+    alias(libs.plugins.ksp) apply false
 
-    id("com.google.devtools.ksp") version "2.0.21-1.0.27" apply false
 }

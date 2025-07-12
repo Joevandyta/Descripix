@@ -90,7 +90,6 @@ import com.jovan.descripix.data.source.remote.request.UserRequest
 import com.jovan.descripix.domain.model.Language
 import com.jovan.descripix.ui.common.UiState
 import com.jovan.descripix.ui.component.ComingSoonModal
-import com.jovan.descripix.ui.component.LanguageCard
 import com.jovan.descripix.ui.component.LogoutModal
 import com.jovan.descripix.ui.component.SettingCard
 import com.jovan.descripix.ui.component.TaskFailedModal
@@ -867,58 +866,64 @@ fun AutenticatedDisplay(
                             dismissOnClickOutside = false,
                         )
                     ) {
-                        if (visibleModal == ModalType.COMING_SOON){
-                            ComingSoonModal(
-                                onClick = {
-                                    visibleModal = null
-                                },
-                                modifier = Modifier
-                                    .width(300.dp)
-                            )
-                        }else if (visibleModal == ModalType.EDIT_PROFILE){
-                            EditProfile(
-                                onConfirmClicked = { newUserData ->
-                                    Log.d(
-                                        "ProfileScreen-onConfirmClicked",
-                                        "New User Data: $newUserData"
-                                    )
-                                    val session = (sessionState as UiState.Success)
-                                    Log.d("ProfileScreen-onConfirmClicked", "New User Data: $session")
-
-                                    if (session.data.isLogin) {
-                                        viewModel.updateUserDetail(
-                                            newUserData,
-                                            token = session.data.token,
-                                            context = context
+                        when (visibleModal) {
+                            ModalType.COMING_SOON -> {
+                                ComingSoonModal(
+                                    onClick = {
+                                        visibleModal = null
+                                    },
+                                    modifier = Modifier
+                                        .width(300.dp)
+                                )
+                            }
+                            ModalType.EDIT_PROFILE -> {
+                                EditProfile(
+                                    onConfirmClicked = { newUserData ->
+                                        Log.d(
+                                            "ProfileScreen-onConfirmClicked",
+                                            "New User Data: $newUserData"
                                         )
+                                        val session = (sessionState as UiState.Success)
+                                        Log.d("ProfileScreen-onConfirmClicked", "New User Data: $session")
+
+                                        if (session.data.isLogin) {
+                                            viewModel.updateUserDetail(
+                                                newUserData,
+                                                token = session.data.token,
+                                                context = context
+                                            )
+                                        }
+                                    },
+                                    isButtonAcivated = isButtonAcivated,
+                                    onDismissClicked = {
+                                        visibleModal = null
+                                    },
+                                    initialUser = userDetail,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                )
+                            }
+                            ModalType.TASKFAILED -> {
+                                TaskFailedModal(
+                                    text = stringResource(R.string.please_try_again),
+                                    onClick = {
+                                        visibleModal = null
+                                    },
+                                    modifier = Modifier
+                                        .width(300.dp)
+                                )
+                            }
+                            ModalType.LOGOUT -> {
+                                LogoutModal(
+                                    onLogoutConfirm = {
+                                        viewModel.logout(context)
+                                    },
+                                    onDismiss = {
+                                        visibleModal = null
                                     }
-                                },
-                                isButtonAcivated = isButtonAcivated,
-                                onDismissClicked = {
-                                    visibleModal = null
-                                },
-                                initialUser = userDetail,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                            )
-                        }else if (visibleModal == ModalType.TASKFAILED){
-                            TaskFailedModal(
-                                text = stringResource(R.string.please_try_again),
-                                onClick = {
-                                    visibleModal = null
-                                },
-                                modifier = Modifier
-                                    .width(300.dp)
-                            )
-                        }else if (visibleModal == ModalType.LOGOUT){
-                            LogoutModal(
-                                onLogoutConfirm = {
-                                    viewModel.logout(context)
-                                },
-                                onDismiss = {
-                                    visibleModal = null
-                                }
-                            )
+                                )
+                            }
+                            null -> {}
                         }
                     }
                 }

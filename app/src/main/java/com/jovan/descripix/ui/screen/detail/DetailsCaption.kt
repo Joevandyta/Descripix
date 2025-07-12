@@ -1,6 +1,6 @@
 package com.jovan.descripix.ui.screen.detail
 
-import FloatingToolbar
+import com.jovan.descripix.ui.component.FloatingToolbar
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
@@ -100,13 +100,11 @@ fun DetailScreen(
     val deleteCaptionState by viewModel.deleteCaption.collectAsStateWithLifecycle()
 
     var isShareExpanded by remember { mutableStateOf(false) }
-    //to check if caption is saved in start
     var isInitialCaptionSave by remember { mutableStateOf(false) }
-    var toogleSaveActive by remember { mutableStateOf(false) }
+    var toggleSaveActive by remember { mutableStateOf(false) }
     var isGenerateButtonActive by remember { mutableStateOf(true) }
     var isToggleSaveEnabled by remember { mutableStateOf(true) }
 
-    // State untuk setiap metadata field
     var captionText by remember { mutableStateOf(captionEntity.caption ?: "") }
     var author by remember { mutableStateOf(captionEntity.author ?: "") }
     var selectedDate by remember { mutableStateOf(captionEntity.date ?: "") }
@@ -130,13 +128,13 @@ fun DetailScreen(
         viewModel.resetAllStates()
         if (captionEntity.id > 0) {
             isInitialCaptionSave = true
-            toogleSaveActive = true
+            toggleSaveActive = true
         } else {
             isInitialCaptionSave = false
-            toogleSaveActive = false
+            toggleSaveActive = false
         }
         Log.d("DetailScreen- LaunchedEffect", "isInitialCaptionSave : $isInitialCaptionSave")
-        Log.d("DetailScreen- LaunchedEffect", "toogleSaveActive : $toogleSaveActive")
+        Log.d("DetailScreen- LaunchedEffect", "toogleSaveActive : $toggleSaveActive")
         viewModel.getSession(context)
         viewModel.setCaptionEntity(captionEntity)
     }
@@ -176,7 +174,7 @@ fun DetailScreen(
         )
 
         captionState?.let { state ->
-            toogleSaveActive = !(captionText != state.caption
+            toggleSaveActive = !(captionText != state.caption
                     || author != state.author
                     || selectedDate != state.date
                     || location != state.location
@@ -207,7 +205,7 @@ fun DetailScreen(
                         )
                     }
                     isInitialCaptionSave = true
-                    toogleSaveActive = true
+                    toggleSaveActive = true
                     Log.d("DetailScreen", "EditedCaption : $captionState")
                 } else {
                     simpleToast(context, "Failed to save edited caption")
@@ -246,7 +244,7 @@ fun DetailScreen(
                         )
                     )
                     isInitialCaptionSave = true
-                    toogleSaveActive = true
+                    toggleSaveActive = true
                     Log.d("DetailScreen", "SavedCaption $captionState")
                 } else {
                     simpleToast(context, savedCaption.message.toString())
@@ -274,7 +272,7 @@ fun DetailScreen(
                 if (deletedCaption.status) {
                     viewModel.clearCaptionEntity()
                     isInitialCaptionSave = false
-                    toogleSaveActive = false
+                    toggleSaveActive = false
                     Log.d("DetailScreen", "DeleteCaption $captionState")
                 } else {
                     simpleToast(context, deletedCaption.message.toString())
@@ -447,10 +445,10 @@ fun DetailScreen(
                         onLoginClicked = {
                             viewModel.login(context)
                         },
-                        toogleSaveActive = toogleSaveActive,
+                        toogleSaveActive = toggleSaveActive,
                         isToogleSaveEnabled = isToggleSaveEnabled,
                         onSaveClicked = {
-                            if (!toogleSaveActive) {
+                            if (!toggleSaveActive) {
                                 //Save
                                 if (!isInitialCaptionSave) {
                                     //Save

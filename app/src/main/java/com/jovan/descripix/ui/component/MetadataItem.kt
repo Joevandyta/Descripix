@@ -104,7 +104,7 @@ fun MetadataDateItem(
         ) {
             Text(
                 text = value,
-                modifier = Modifier.fillMaxWidth(), // fill area dalam box
+                modifier = Modifier.fillMaxWidth(),
                 style = MaterialTheme.typography.bodyLarge.copy(
                     color = MaterialTheme.colorScheme.onSecondaryContainer
                 )
@@ -121,12 +121,11 @@ fun MetadataDateItem(
 @Preview(showBackground = true)
 @Composable
 fun MetadataItemPreview() {
-    var author by remember { mutableStateOf("John Doe") }
     var isChecked by remember { mutableStateOf(false) }
     DescripixTheme {
         MetadataDateItem(
             label = "Author",
-            value = author,
+            value = "author",
             checked = isChecked,
             onCheckedChange = { isChecked = it },
             onDatePickerClick = {  }
