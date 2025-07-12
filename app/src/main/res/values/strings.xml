@@ -1,0 +1,40 @@
+<resources>
+    <string name="app_name" translatable="false">Descripix</string>
+    <string name="string_login" translatable="false">Login</string>
+    <string name="logout" translatable="false">Logout</string>
+<!--    <string name="caption">Caption</string>-->
+    <string name="Home_fragment_guest_view">SIGN IN TO SAVE AND VIEW CAPTIONS</string>
+    <string name="language">Language</string>
+    <string name="about_me">About Me</string>
+
+    <string name="menu_profile" translatable="false">Profile</string>
+    <string name="menu_home" translatable="false">Home</string>
+    <string name="menu_upload" translatable="false">Upload</string>
+    <string name="about_app">About App</string>
+    <string name="oke">Oke</string>
+    <string name="client_id" translatable="false">860627407571-qnci3hh5k9vq20m50s2dq3sb4jmof9fv.apps.googleusercontent.com</string>
+    <string name="unexpected_type_of_credential">Unexpected type of credential</string>
+
+    <string name="unknown_error">Unknown error</string>y
+    <string name="no_information_provided">No information provided.</string>
+
+    <string name="string_fix_male" translatable="false">male</string>
+    <string name="string_fix_female" translatable="false">female</string>
+    <string name="string_display_male" >Male</string>
+    <string name="string_display_female" >Female</string>
+    <string name="google_id_is_not_valid">Google id is not valid</string>
+    <string name="login_canceled_by_user">Login canceled by User</string>
+    <string name="failed_to_load_image">Failed to load image</string>
+    <string name="string_author">Author</string>
+    <string name="string_date">Date</string>
+    <string name="model">Model</string>
+    <string name="login">Login</string>
+    <string name="this_feature_is_under_development">This Feature Is Under Development</string>
+    <string name="task_failed">Task Failed</string>
+    <string name="unexpected_type_of_error">Unexpected type of error</string>
+    <string name="bearer" translatable="false">Bearer %1$s</string>
+    <string name="you_are_not_authenticated_click_button_below_to_sign_in">You are not authenticated, click button below to sign in</string>
+    <string name="please_try_again">Please try again</string>
+    <string name="are_you_sure_you_want_to_log_out">Are you sure you want to log out?</string>
+
+</resources>

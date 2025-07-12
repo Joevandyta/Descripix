@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="unexpected_type_of_credential">Jenis credential yang tidak diharapkan</string>
+    <string name="unknown_error">Error tidak diketahui</string>
+    <string name="no_information_provided">Belum ada informasi.</string>
+    <string name="Home_fragment_guest_view">SiGN IN UNTUK MENYIMPAN DAN MELIHAT CAPTION</string>
+    <string name="language">Bahasa</string>
+    <string name="about_me">Tentang saya</string>
+    <string name="string_display_male">Pria</string>
+    <string name="string_display_female">Wanita</string>
+    <string name="google_id_is_not_valid">Google id tidak valid</string>
+    <string name="login_canceled_by_user">Proses Login dibatalkan pengguna</string>
+    <string name="about_app">Tentang Aplikasi</string>
+    <string name="oke">Oke</string>
+    <string name="failed_to_load_image">Gagal memproses gambar</string>
+    <string name="string_author">Author</string>
+    <string name="string_date">Tanggal</string>
+    <string name="model">Model</string>
+    <string name="login">Login</string>
+    <string name="this_feature_is_under_development">Fitur Ini Sedang Dikembangkan</string>
+    <string name="task_failed">Tugas Gagal</string>
+    <string name="unexpected_type_of_error">Error tidak diketahui</string>
+    <string name="you_are_not_authenticated_click_button_below_to_sign_in">Anda belum terdaftar, klik tombol di bawah ini untuk mendaftar.</string>
+
+</resources>
