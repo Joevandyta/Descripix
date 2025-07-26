@@ -17,15 +17,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -90,7 +87,7 @@ fun DescripixApp(
                             } else {
                                 Toast.makeText(
                                     context,
-                                    "File tidak didukung",
+                                    context.getString(R.string.file_is_not_supported),
                                     Toast.LENGTH_SHORT
                                 ).show()
                                 navController.popBackStack()
@@ -98,7 +95,7 @@ fun DescripixApp(
                         } ?: run {
                             Toast.makeText(
                                 context,
-                                "Tidak ada gambar yang dipilih",
+                                context.getString(R.string.there_is_no_image_selected),
                                 Toast.LENGTH_SHORT
                             ).show()
                             navController.popBackStack() // Balik ke layar sebelumnya
@@ -190,17 +187,6 @@ fun BottomBar(
             )
         }
     }
-}
-
-@Composable
-inline fun <reified T : ViewModel> NavBackStackEntry.sharedViewModel(
-    navController: NavHostController,
-): T {
-    val navGraphRoute = destination.parent?.route ?: return hiltViewModel()
-    val parentEntry = remember(this) {
-        navController.getBackStackEntry(navGraphRoute)
-    }
-    return hiltViewModel(parentEntry)
 }
 
 @Preview(showBackground = true)

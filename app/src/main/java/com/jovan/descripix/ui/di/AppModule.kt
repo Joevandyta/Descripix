@@ -2,6 +2,8 @@ package com.jovan.descripix.ui.di
 
 import com.jovan.descripix.domain.usecase.DescripixInteractor
 import com.jovan.descripix.domain.usecase.DescripixUseCase
+import com.jovan.descripix.utils.credential.CredentialService
+import com.jovan.descripix.utils.credential.ICredentialService
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -14,6 +16,9 @@ abstract class AppModule {
 
     @Binds
     @ViewModelScoped
-    abstract fun provideDescribitUseCase(describitInteractor: DescripixInteractor): DescripixUseCase
+    abstract fun provideDescribitUseCase(descripixInteractor: DescripixInteractor): DescripixUseCase
 
+    @Binds
+    @ViewModelScoped
+    abstract fun bindCredentialService(credentialService: CredentialService): ICredentialService
 }

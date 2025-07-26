@@ -28,11 +28,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.jovan.descripix.R
 import com.jovan.descripix.ui.theme.DescripixTheme
 import java.io.File
 
@@ -82,7 +84,7 @@ fun CaptionItem(
                     fontSize = 16.sp,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding( start = 8.dp, end = 0.dp, top = 8.dp, bottom = 8.dp)
+                        .padding(start = 8.dp, end = 0.dp, top = 8.dp, bottom = 8.dp)
                         .weight(1f)
                         .animateContentSize(
                             animationSpec = tween(
@@ -95,7 +97,9 @@ fun CaptionItem(
                 IconButton(onClick = { isExpanded = !isExpanded }) {
                     Icon(
                         imageVector = Icons.Filled.KeyboardArrowDown,
-                        contentDescription = if (isExpanded) "Show less" else "Show more",
+                        contentDescription = if (isExpanded) stringResource(R.string.show_less) else stringResource(
+                            R.string.show_more
+                        ),
                         modifier = Modifier.rotate(rotationAngle)
                     )
                 }

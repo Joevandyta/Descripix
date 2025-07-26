@@ -11,14 +11,14 @@ import com.jovan.descripix.data.source.remote.request.UserRequest
 import com.jovan.descripix.data.source.remote.response.ApiResponse
 import com.jovan.descripix.data.source.remote.response.CaptionDataResponse
 import com.jovan.descripix.data.source.remote.response.LoginResponse
-import com.jovan.descripix.domain.model.Language
+import com.jovan.descripix.ui.common.Language
 
-import com.jovan.descripix.domain.repository.IDescribitRepository
+import com.jovan.descripix.domain.repository.IDescripixRepository
 import kotlinx.coroutines.flow.Flow
 import org.json.JSONObject
 import javax.inject.Inject
 
-class DescripixInteractor @Inject constructor(private val repository: IDescribitRepository) :
+class DescripixInteractor @Inject constructor(private val repository: IDescripixRepository) :
     DescripixUseCase {
 
     override fun getSession(context: Context, isConnected: Boolean): Flow<SessionData> {

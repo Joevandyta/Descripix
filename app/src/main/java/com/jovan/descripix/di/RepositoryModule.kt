@@ -1,7 +1,7 @@
 package com.jovan.descripix.di
 
-import com.jovan.descripix.data.DescribitRepository
-import com.jovan.descripix.domain.repository.IDescribitRepository
+import com.jovan.descripix.data.DescripixRepository
+import com.jovan.descripix.domain.repository.IDescripixRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -11,5 +11,5 @@ import dagger.hilt.components.SingletonComponent
 @InstallIn(SingletonComponent::class)
 abstract class RepositoryModule {
     @Binds
-    abstract fun provideRepository(describitRepository: DescribitRepository): IDescribitRepository
+    abstract fun provideRepository(descripixRepository: DescripixRepository): IDescripixRepository
 }

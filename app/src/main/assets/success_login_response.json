@@ -1,0 +1,8 @@
+{
+  "status": true,
+  "message": "login successful",
+  "data": {
+    "access": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUwNzYyMTE2LCJpYXQiOjE3NTA2NzU3MTYsImp0aSI6ImU4ZjQ3NTE2NjY1OTQwZWM5NmJiZWZlZTdhNjVmZjllIiwidXNlcl9pZCI6IjExMzgyNjk3MDUwMjkzMzM5NjEwNyJ9.MXQIe4jzxaOUq_7GxJIfa5Q6Xr3k6HUxXgdkI7a8Hm8",
+    "refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc1MDg0ODUxNiwiaWF0IjoxNzUwNjc1NzE2LCJqdGkiOiIyNTNhODk5OGJiYmI0MDU0YjZlMjU0MTgyODU5ZTBlNiIsInVzZXJfaWQiOiIxMTM4MjY5NzA1MDI5MzMzOTYxMDcifQ.Z91S8vh3VIllAwN6kqB-nm_kIX3HFjnTl4B3px6_cu8"
+  }
+}

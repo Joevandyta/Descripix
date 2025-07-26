@@ -1,4 +1,4 @@
-package com.jovan.descripix.domain.model
+package com.jovan.descripix.ui.common
 
 
 sealed class Language(val name: String, val code: String) {

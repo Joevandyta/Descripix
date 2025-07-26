@@ -2,9 +2,9 @@ package com.jovan.descripix.di
 
 import android.content.Context
 import com.jovan.descripix.BuildConfig
-import com.jovan.descripix.data.source.remote.network.AndroidConnectivityObserver
+import com.jovan.descripix.data.source.remote.network.ConnectivityObserverImpl
 import com.jovan.descripix.data.source.remote.network.ApiService
-import com.jovan.descripix.data.source.remote.network.ConnectivityObserver
+import com.jovan.descripix.utils.conectivity.ConnectivityObserver
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -52,6 +52,6 @@ class NetworkModule {
     fun provideConnectivityObserver(
         @ApplicationContext context: Context
     ): ConnectivityObserver {
-        return AndroidConnectivityObserver(context)
+        return ConnectivityObserverImpl(context)
     }
 }

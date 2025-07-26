@@ -7,8 +7,8 @@ plugins {
     alias(libs.plugins.hiltAndroid)
     alias(libs.plugins.kapt)
     alias(libs.plugins.google.gms.google.services)
-    alias(libs.plugins.parcelize)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.parcelize)
 }
 
 android {
@@ -22,7 +22,8 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "com.jovan.descripix.HiltTestRunner"
+
         vectorDrawables {
             useSupportLibrary = true
         }
@@ -59,10 +60,15 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "META-INF/LICENSE.md"
+            excludes += "META-INF/LICENSE-notice.md"
         }
     }
     androidResources {
         generateLocaleConfig = true
+    }
+    testOptions {
+        animationsDisabled = true
     }
 }
 
@@ -87,9 +93,11 @@ dependencies {
     //hilt
     implementation(libs.hilt.android)
     implementation(libs.androidx.navigation.runtime.android)
-    implementation(libs.androidx.ui.text.google.fonts)
     kapt(libs.hilt.android.compiler)
     implementation (libs.androidx.hilt.navigation.compose)
+
+    //googleFont
+    implementation(libs.androidx.ui.text.google.fonts)
 
     //datastore
     implementation(libs.androidx.datastore.preferences)
@@ -125,12 +133,32 @@ dependencies {
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)
 
-
+    //    unitTest
     testImplementation(libs.junit)
+    implementation(libs.androidx.core)
+    testImplementation(libs.androidx.core.testing)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation (libs.truth)
+    testImplementation(libs.mockwebserver)
+    testImplementation(libs.mockk)
+
+    //Integration test
+    implementation(libs.androidx.navigation.testing.android)
+    androidTestImplementation(libs.junit)
+    androidTestImplementation(libs.hilt.android.testing)
+    kaptAndroidTest(libs.hilt.android.compiler)
+    androidTestImplementation(libs.kotlinx.coroutines.test)
+    androidTestImplementation(libs.androidx.core.testing)
+    androidTestImplementation(libs.truth)
+    androidTestImplementation(libs.androidx.core)
+    androidTestImplementation(libs.mockwebserver)
+    androidTestImplementation(libs.mockk.android)
+    androidTestImplementation(libs.androidx.runner)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
+
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 }

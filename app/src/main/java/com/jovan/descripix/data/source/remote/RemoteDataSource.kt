@@ -3,9 +3,7 @@ package com.jovan.descripix.data.source.remote
 import android.content.Context
 import android.net.Uri
 import android.util.Log
-import androidx.compose.ui.platform.LocalContext
 import androidx.core.net.toUri
-import androidx.lifecycle.viewModelScope
 import com.jovan.descripix.data.source.remote.network.ApiService
 import com.jovan.descripix.R
 import com.jovan.descripix.data.source.remote.request.CaptionRequest
@@ -17,19 +15,16 @@ import com.jovan.descripix.data.source.remote.response.ListCaptionResponse
 import com.jovan.descripix.data.source.remote.response.LoginResponse
 import com.jovan.descripix.data.source.remote.response.UserResponse
 import com.jovan.descripix.domain.repository.IRemoteDataSource
-import com.jovan.descripix.data.source.remote.network.ConnectivityObserver
-import com.jovan.descripix.utils.downloadImageToFile
+import com.jovan.descripix.utils.ImageConverter
+import com.jovan.descripix.utils.conectivity.ConnectivityObserver
 import com.jovan.descripix.utils.handleApiException
 import com.jovan.descripix.utils.reduceFileSize
 import com.jovan.descripix.utils.resizeIfTooLarge
-import com.jovan.descripix.utils.uriToFile
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -134,10 +129,11 @@ class RemoteDataSource @Inject constructor(
         val device = captionRequest.device?.toRequestBody()
         val model = captionRequest.model?.toRequestBody()
         val imageUri = captionRequest.image
+
         var multipartBody: MultipartBody.Part? = null
         try {
             val imageFile = withContext(Dispatchers.IO) {
-                uriToFile(imageUri.toUri(), context).reduceFileSize().resizeIfTooLarge()
+                ImageConverter.uriToFile(imageUri.toUri(), context).reduceFileSize().resizeIfTooLarge()
             }
             val requestImageFile = imageFile.asRequestBody("image/jpeg".toMediaType())
             multipartBody = MultipartBody.Part.createFormData(
@@ -148,7 +144,7 @@ class RemoteDataSource @Inject constructor(
 
         } catch (e: Exception) {
             val imageFile = withContext(Dispatchers.IO) {
-                downloadImageToFile(context, imageUri)?.reduceFileSize()?.resizeIfTooLarge()
+                ImageConverter.downloadImageToFile(context, imageUri)?.reduceFileSize()?.resizeIfTooLarge()
             }
             imageFile?.let {
                 val requestImage = it.asRequestBody("image/jpeg".toMediaTypeOrNull())
@@ -158,7 +154,6 @@ class RemoteDataSource @Inject constructor(
                     requestImage
                 )
             }
-
         }
 
         if (multipartBody == null) {
@@ -199,10 +194,6 @@ class RemoteDataSource @Inject constructor(
         val location = captionRequest.location.toString()
         val device = captionRequest.device.toString()
         val model = captionRequest.model.toString()
-
-        Log.d("RemoteDataSource", "Caption: $caption ")
-        Log.d("RemoteDataSource", "Caption: $captionRequest ")
-
         return handleApiException {
             apiService.editCaption(
                 id,
@@ -233,7 +224,7 @@ class RemoteDataSource @Inject constructor(
             metadata.toString().toRequestBody("application/json".toMediaTypeOrNull())
         try {
             val imageFile = withContext(Dispatchers.IO) {
-                uriToFile(image, context).reduceFileSize().resizeIfTooLarge()
+                ImageConverter.uriToFile(image, context).reduceFileSize().resizeIfTooLarge()
             }
 
             val requestImageFile = imageFile.asRequestBody("image/jpeg".toMediaType())
@@ -250,7 +241,7 @@ class RemoteDataSource @Inject constructor(
             }
         } catch (e: Exception) {
             val imageFile = withContext(Dispatchers.IO) {
-                downloadImageToFile(context, image.toString())?.resizeIfTooLarge()
+                ImageConverter.downloadImageToFile(context, image.toString())?.resizeIfTooLarge()
                     ?.reduceFileSize()
             }
             imageFile?.let {
@@ -277,3 +268,5 @@ class RemoteDataSource @Inject constructor(
         handleApiException { apiService.getCaptionList(token = context.getString(R.string.bearer, token)) }
 
 }
+
+

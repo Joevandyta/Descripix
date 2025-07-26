@@ -1,7 +1,6 @@
 package com.jovan.descripix
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
@@ -25,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.jovan.descripix.ui.SplashScreenViewModel
 import com.jovan.descripix.ui.theme.DescripixTheme
@@ -70,7 +70,7 @@ fun SplashScreen() {
     ) {
         Image(
             painter = painterResource(id = R.drawable.desccripix_logo_backgroundless),
-            contentDescription = "Descripix Logo",
+            contentDescription = stringResource(R.string.descripix_logo),
             modifier = Modifier
                 .scale(scale.value)
                 .size(200.dp)

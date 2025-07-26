@@ -24,7 +24,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.jovan.descripix.ui.theme.DescripixTheme
-import com.jovan.descripix.utils.simpleToast
 
 @Composable
 fun MetadataItem(

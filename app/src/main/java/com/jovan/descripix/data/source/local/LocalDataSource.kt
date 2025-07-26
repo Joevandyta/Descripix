@@ -6,7 +6,7 @@ import com.jovan.descripix.data.source.local.entity.CaptionEntity
 import com.jovan.descripix.data.source.local.entity.UserEntity
 import com.jovan.descripix.data.source.local.room.CaptionDao
 import com.jovan.descripix.data.source.local.room.UserDao
-import com.jovan.descripix.domain.model.Language
+import com.jovan.descripix.ui.common.Language
 import com.jovan.descripix.domain.repository.ILocalDataSource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -14,11 +14,8 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class LocalDataSource @Inject constructor(
-    private val userPreference: UserPreference,
-    private val describitDao: CaptionDao,
-    private val userDao: UserDao
-) : ILocalDataSource {
+class LocalDataSource @Inject constructor(private val userPreference: UserPreference, private val describitDao: CaptionDao, private val userDao: UserDao) : ILocalDataSource {
+
     override suspend fun saveSession(user: SessionData) {
         userPreference.saveSession(user)
     }

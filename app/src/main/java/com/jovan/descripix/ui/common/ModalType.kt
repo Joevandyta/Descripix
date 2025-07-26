@@ -1,0 +1,5 @@
+package com.jovan.descripix.ui.common
+
+enum class ModalType {
+    COMING_SOON, EDIT_PROFILE, TASKFAILED, LOGOUT, GENERATEfAILED, DELETEFAILED, SAVEFAILED, EDITFAILED
+}

@@ -9,12 +9,11 @@ import android.net.NetworkCapabilities
 import android.net.Uri
 import android.util.Log
 import android.widget.Toast
+import androidx.core.graphics.scale
 import com.google.gson.Gson
 import com.jovan.descripix.data.source.remote.response.ApiResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import retrofit2.HttpException
 import java.io.BufferedInputStream
 import java.io.ByteArrayOutputStream
@@ -27,21 +26,10 @@ import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import java.util.concurrent.TimeUnit
 import kotlin.math.sqrt
-import androidx.core.graphics.scale
 
-private const val FILENAME_FORMAT = "yyyyMMdd_HHmmss"
 
-@SuppressLint("ConstantLocale")
-private val timeStamp: String =
-    SimpleDateFormat("dd MMMM yyyy, HH:mm", Locale.getDefault()).format(Date())
 private const val MAXIMAL_SIZE = 1000000
-private const val MAXPIXELCOUNT = 33177600
-fun simpleToast(context: Context, string: String) {
-    Toast.makeText(context, string, Toast.LENGTH_SHORT).show()
-}
-
 
 suspend fun <T> handleApiException(
     apiCall: suspend () -> ApiResponse<T>
@@ -66,37 +54,20 @@ suspend fun <T> handleApiException(
     }
 }
 
-fun isConnected(context: Context): Boolean {
-    val connectivityManager =
-        context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-
-    val network = connectivityManager.activeNetwork ?: return false
-    val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
-    return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-
-}
+//fun isConnected(context: Context): Boolean {
+//    val connectivityManager =
+//        context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+//
+//    val network = connectivityManager.activeNetwork ?: return false
+//    val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+//    return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+//}
 
 fun dateFormater(date: Date): String {
     val formatter = SimpleDateFormat("dd-MM-yyyy, HH:mm", Locale.getDefault())
     return formatter.format(date)
 }
 
-fun uriToFile(imageUri: Uri, context: Context): File {
-    val myFile = createCustomTempFile(context)
-    val inputStream = context.contentResolver.openInputStream(imageUri) as InputStream
-    val outputStream = FileOutputStream(myFile)
-    val buffer = ByteArray(1024)
-    var length: Int
-    while (inputStream.read(buffer).also { length = it } > 0) outputStream.write(buffer, 0, length)
-    outputStream.close()
-    inputStream.close()
-    return myFile
-}
-
-fun createCustomTempFile(context: Context): File {
-    val filesDir = context.externalCacheDir
-    return File.createTempFile(timeStamp, ".jpg", filesDir)
-}
 
 fun File.reduceFileSize(): File {
     val file = this
@@ -139,31 +110,6 @@ fun File.moveFileToPersistentStorage(context: Context): File {
     val targetDir = File(context.getExternalFilesDir("images"), cacheFile.name)
     cacheFile.copyTo(targetDir, overwrite = true)
     return targetDir
-}
-
-suspend fun downloadImageToFile(context: Context, imageUrl: String): File? {
-    return withContext(Dispatchers.IO) {
-        try {
-            val url = URL(imageUrl)
-            val connection = url.openConnection()
-            connection.connect()
-
-            val inputStream = BufferedInputStream(url.openStream())
-            val tempFile = createCustomTempFile(context)
-            val outputStream = FileOutputStream(tempFile)
-
-            inputStream.copyTo(outputStream)
-
-            outputStream.flush()
-            outputStream.close()
-            inputStream.close()
-
-            tempFile.resizeIfTooLarge()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        }
-    }
 }
 
 fun String.convertBirthDate(): String {

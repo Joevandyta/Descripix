@@ -1,6 +1,5 @@
 package com.jovan.descripix.ui.screen.home
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -23,23 +22,21 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
@@ -52,8 +49,6 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.jovan.descripix.R
 import com.jovan.descripix.data.source.local.entity.CaptionEntity
 import com.jovan.descripix.ui.common.UiState
@@ -61,6 +56,7 @@ import com.jovan.descripix.ui.component.CaptionItem
 import com.jovan.descripix.ui.component.LottieAnimationPreload
 import com.jovan.descripix.ui.component.ShimmerListItem
 import com.jovan.descripix.ui.theme.DescripixTheme
+import com.jovan.descripix.ui.common.TestTags
 
 @Composable
 fun HomeScreen(
@@ -70,8 +66,6 @@ fun HomeScreen(
 ) {
     val context = LocalContext.current
     val sessionState by viewModel.sessionState.collectAsStateWithLifecycle()
-    val captionListState by viewModel.captionListState.collectAsStateWithLifecycle()
-    val loginState by viewModel.loginState.collectAsStateWithLifecycle()
     val isConnected by viewModel.isConnected.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
@@ -99,11 +93,13 @@ fun HomeScreen(
                 }
 
                 AutenticatedScreen(
+                    modifier = modifier.testTag(TestTags.AUTHENTICATED_SCREEN),
                     navigateToDetail = navigateToDetail
                 )
             } else {
                 GuestScreen(
-                    modifier = modifier,
+                    modifier = modifier
+                        .testTag(TestTags.GUEST_SCREEN),
                     onLoginClicked = {
                         viewModel.login(context)
                     }
@@ -121,7 +117,7 @@ fun GuestScreen(
     onLoginClicked: () -> Unit,
 ) {
     var visible by remember { mutableStateOf(false) }
-    val context = LocalContext.current
+    LocalContext.current
 
     LaunchedEffect(Unit) {
         visible = true
@@ -213,16 +209,17 @@ fun GuestScreen(
                         start.linkTo(parent.start)
                         end.linkTo(parent.end)
                     }
-                    .padding(start = 8.dp, end = 8.dp),
+                    .padding(start = 8.dp, end = 8.dp)
+                    .testTag(TestTags.SIGN_IN_BUTTON),
                 elevation = ButtonDefaults.buttonElevation(2.dp)
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.ic_google),
-                    contentDescription = "Login Button"
+                    contentDescription = stringResource(R.string.sign_in_button)
                 )
                 Spacer(modifier = Modifier.size(8.dp))
                 Text(
-                    text = stringResource(R.string.login),
+                    text = stringResource(R.string.sign_in),
                     color = Color.Black,
                     fontWeight = FontWeight.Bold
                 )
@@ -269,7 +266,6 @@ fun AutenticatedScreen(
     val captionListState by viewModel.captionListState.collectAsStateWithLifecycle()
     val captionDetailState by viewModel.captionDetailState.collectAsStateWithLifecycle()
     val captionItems = (captionListState as? UiState.Success)?.data.orEmpty()
-    val sessionState by viewModel.sessionState.collectAsStateWithLifecycle()
     val isLoading = captionListState is UiState.Loading
 
     LaunchedEffect(captionDetailState) {
@@ -287,21 +283,15 @@ fun AutenticatedScreen(
                         model = captionData.model ?: "",
                         image = captionData.image
                     )
-                    Log.d("HOME", "captionDetail: $captionEntity")
 
                     viewModel.resetCaptionDetail()
                     navigateToDetail(captionEntity)
                 } else {
-                    Log.d("HOME", "captionDetail is null")
                     viewModel.resetCaptionDetail()
                 }
             }
 
             is UiState.Error -> {
-                val captionData = (captionDetailState as UiState.Error).errorMessage
-
-                Log.e("HOME", "Error fetching caption details: $captionData")
-                // Reset state on error
                 viewModel.resetCaptionDetail()
             }
 
@@ -314,47 +304,46 @@ fun AutenticatedScreen(
             .fillMaxSize()
             .padding(8.dp)
     ) {
+        if (!isLoading && captionItems.isEmpty()) {
+            Box(
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp)
+                    ) {
+                        LottieAnimationPreload(
+                            animationResId = R.raw.lottie_empty_list,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .align(Alignment.Center)
+                        )
+                    }
+                    Spacer(modifier = Modifier.size(8.dp))
+
+                    Text(
+                        text = stringResource(R.string.you_don_t_have_any_captions_yet),
+                        fontSize = 24.sp
+                    )
+                }
+            }
+        }
+
         LazyColumn(
-            modifier = modifier
+            modifier = modifier.fillMaxSize(),
         ) {
             if (isLoading) {
                 items(10) {
                     ShimmerListItem()
                 }
-            } else if (captionItems.isEmpty()){
-                item {
-                    Box(
-                        modifier = modifier
-                            .fillMaxSize()
-                            .padding(8.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(200.dp)
-                            ) {
-                                LottieAnimationPreload(
-                                    animationResId = R.raw.lottie_empty_list,
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .align(Alignment.Center)
-                                )
-                            }
-                            Spacer(modifier = Modifier.size(8.dp))
-
-                            Text(
-                                text = "You don't have any captions yet",
-                                fontSize = 24.sp
-                            )
-                        }
-                    }
-                }
-            }
-            else {
+            } else {
                 items(
                     items = captionItems,
                     key = { it.id }) { item ->
@@ -371,7 +360,6 @@ fun AutenticatedScreen(
             }
         }
     }
-
 }
 
 @Preview(showBackground = true)

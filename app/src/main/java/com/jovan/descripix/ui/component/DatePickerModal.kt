@@ -24,7 +24,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.jovan.descripix.R
 import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -46,12 +48,12 @@ fun DateTimePickerModal(
                     selectedDate = datePickerState.selectedDateMillis
                     showDatePicker = false
                 }) {
-                    Text("Next")
+                    Text(stringResource(R.string.next))
                 }
             },
             dismissButton = {
                 TextButton(onClick = onDismiss) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         ) {
@@ -63,7 +65,7 @@ fun DateTimePickerModal(
     } else {
         TimePickerDialog(
             title = {
-                Text(text = "Select Time")
+                Text(text = stringResource(R.string.select_time))
             },
             onDismissRequest = onDismiss,
             confirmButton = {
@@ -85,7 +87,7 @@ fun DateTimePickerModal(
                 TextButton(onClick = {
                     showDatePicker = true
                 }) {
-                    Text("Back")
+                    Text(stringResource(R.string.back))
                 }
             },
         ) {

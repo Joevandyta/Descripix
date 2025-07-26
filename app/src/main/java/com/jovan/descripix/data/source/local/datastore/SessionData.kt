@@ -4,4 +4,8 @@ data class SessionData(
     val refreshToken: String,
     val token: String,
     val isLogin: Boolean = false
-)
+){
+    companion object {
+        fun empty() = SessionData("", "", false)
+    }
+}

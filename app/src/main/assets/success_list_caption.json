@@ -1,0 +1,46 @@
+{
+    "status": true,
+    "message": "List captions retrieved successfully",
+    "data": [
+        {
+            "id": 5,
+            "caption": "Ini post joe 2 3",
+            "image": "https://smaller-pictures.appspot.com/images/dreamstime_xxl_65780868_small.jpg"
+        },
+        {
+            "id": 6,
+            "caption": "Ini post joe 2 yang ke 2",
+            "image": "https://smaller-pictures.appspot.com/images/dreamstime_xxl_65780868_small.jpg"
+        },
+        {
+            "id": 7,
+            "caption": "Ini post joe 2 yang ke 4",
+            "image": "https://smaller-pictures.appspot.com/images/dreamstime_xxl_65780868_small.jpg"
+        },
+        {
+            "id": 8,
+            "caption": "Ini post joe 2 yang ke 7",
+            "image": "https://png.pngtree.com/png-vector/20191121/ourmid/pngtree-blue-bird-vector-or-color-illustration-png-image_2013004.jpg"
+        },
+        {
+            "id": 9,
+            "caption": "Ini post joe 2 yang ke 7",
+            "image": "https://thumbs.dreamstime.com/b/hand-showing-tiny-small-size-sketch-vector-hand-gesture-showing-tiny-small-size-sketch-engraving-vector-illustration-tee-shirt-158417038.jpg"
+        },
+        {
+            "id": 10,
+            "caption": "Ini post joe 2 yang ke 7",
+            "image": "https://www.shutterstock.com/image-illustration/3d-small-people-jumped-pleasure-260nw-67359301.jpg"
+        },
+        {
+            "id": 11,
+            "caption": "Ini post joe 2 yang ke 7",
+            "image": "https://img.freepik.com/free-vector/opposite-adjectives-words-with-big-small_1308-53856.jpg?semt=ais_hybrid&w=740"
+        },
+        {
+            "id": 12,
+            "caption": "Ini post joe 2 yang ke 7",
+            "image": "https://thumbs.dreamstime.com/b/hand-showing-tiny-small-size-sketch-vector-hand-gesture-showing-tiny-small-size-sketch-engraving-vector-illustration-tee-shirt-158417038.jpg"
+        }
+    ]
+}
