@@ -73,7 +73,7 @@ fun ShimmerListItem(
 
 @Preview(showBackground = true)
 @Composable
-fun previewShimmerListItem() {
+fun PreviewShimmerListItem() {
     DescripixTheme {
         ShimmerListItem(
         )

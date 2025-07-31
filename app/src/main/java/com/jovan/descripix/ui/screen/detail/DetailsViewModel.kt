@@ -70,7 +70,7 @@ class DetailsViewModel @Inject constructor(
             val connected = isConnected.value
             descripixUseCase.getSession(context, connected)
                 .catch { e ->
-                    _sessionState.value = UiState.Error(e.message ?: "Unknown error")
+                    _sessionState.value = UiState.Error(e.message ?: context.getString(R.string.unknown_error))
                 }
                 .collect { session ->
                     if (_sessionState.value != UiState.Success(session)) {
@@ -113,7 +113,6 @@ class DetailsViewModel @Inject constructor(
 
                 if (location != null) {
                     geoLocation = reverseGeocode(context, location.latitude, location.longitude)
-                    Log.d("ViewModel", "Location: $geoLocation")
                 }
 
                 val ifd0Directory = metadata.getFirstDirectoryOfType(ExifIFD0Directory::class.java)
@@ -122,7 +121,7 @@ class DetailsViewModel @Inject constructor(
                 author = ifd0Directory?.getString(ExifIFD0Directory.TAG_ARTIST)
             }
         } catch (e: Exception) {
-            Log.e("ImageMetadata", "Error reading metadata", e)
+            Log.e("ImageMetadata", context.getString(R.string.error_reading_metadata), e)
         }
 
         val dateFormatted = date?.let { dateFormater(it) }
@@ -148,8 +147,6 @@ class DetailsViewModel @Inject constructor(
                 geocoder.getFromLocation(lat, lon, 1, object : Geocoder.GeocodeListener {
                     override fun onGeocode(addresses: MutableList<Address>) {
                         if (addresses.isNotEmpty()) {
-                            val rawAddress = addresses[0].getAddressLine(0)
-
                             cont.resume(addresses[0].getAddressLine(0), null)
                         } else cont.resume(null, null)
                     }
@@ -200,7 +197,7 @@ class DetailsViewModel @Inject constructor(
 
             }.onFailure { e ->
                 val msg = when (e) {
-                    is GetCredentialCancellationException -> "Login Canceled by user"
+                    is GetCredentialCancellationException -> context.getString(R.string.login_canceled_by_user)
                     else -> e.message ?: context.getString(R.string.unknown_error)
                 }
                 _loginState.value = UiState.Error(msg)
@@ -214,17 +211,13 @@ class DetailsViewModel @Inject constructor(
                             try {
                                 val googleIdTokenCredential =
                                     GoogleIdTokenCredential.createFrom(credential.data)
-                                Log.d(
-                                    "HomeViewModel",
-                                    "Token Google: ${googleIdTokenCredential.idToken}"
-                                )
                                 val idToken = googleIdTokenCredential.idToken
 
                                 val loginResult = descripixUseCase.login(idToken, context)
                                 _loginState.value = UiState.Success(loginResult)
 
                             } catch (e: GoogleIdTokenParsingException) {
-                                _loginState.value = UiState.Error("Token Google tidak valid")
+                                _loginState.value = UiState.Error(context.getString(R.string.google_id_is_not_valid))
                             }
                         } else {
                             _loginState.value =
@@ -263,15 +256,15 @@ class DetailsViewModel @Inject constructor(
                     date = date,
                     location = location,
                     device = device,
-                    model = model
+                    model = model,
+                    context = context
                 )
-                Log.d("DetailsViewModel", "generateCaption: $metadata")
 
                 val result = descripixUseCase.generateCaption(metadata, image, context)
                 _generatedCaption.value = UiState.Success(result)
 
             } catch (e: Exception) {
-                _generatedCaption.value = UiState.Error(e.message ?: "Unknown error")
+                _generatedCaption.value = UiState.Error(e.message ?: context.getString(R.string.unknown_error))
             }
         }
     }
@@ -281,28 +274,29 @@ class DetailsViewModel @Inject constructor(
         date: String,
         location: String,
         device: String,
-        model: String
+        model: String,
+        context: Context
     ): JSONObject {
         val jsonObject = JSONObject()
 
         if (author.isNotEmpty()) {
-            jsonObject.put("Author", author)
+            jsonObject.put(context.getString(R.string.cons_author), author)
         }
 
         if (date.isNotEmpty()) {
-            jsonObject.put("Date Taken", date)
+            jsonObject.put(context.getString(R.string.cons_date_taken), date)
         }
 
         if (location.isNotEmpty()) {
-            jsonObject.put("Location", location)
+            jsonObject.put(context.getString(R.string.cons_location), location)
         }
 
         if (device.isNotEmpty()) {
-            jsonObject.put("Device", device)
+            jsonObject.put(context.getString(R.string.cons_device), device)
         }
 
         if (model.isNotEmpty()) {
-            jsonObject.put("Model", model)
+            jsonObject.put(context.getString(R.string.cons_model), model)
         }
 
         return jsonObject
@@ -322,7 +316,7 @@ class DetailsViewModel @Inject constructor(
                 val result = descripixUseCase.deleteCaption(id, token, context)
                 _deleteCaption.value = UiState.Success(result)
             }catch (e: Exception) {
-                _deleteCaption.value = UiState.Error(e.message ?: "Unknown error")
+                _deleteCaption.value = UiState.Error(e.message ?: context.getString(R.string.unknown_error))
             }
         }
     }
@@ -350,7 +344,7 @@ class DetailsViewModel @Inject constructor(
 
                 _saveCaption.value = UiState.Success(result)
             }catch (e: Exception) {
-                _saveCaption.value = UiState.Error(e.message ?: "Unknown error")
+                _saveCaption.value = UiState.Error(e.message ?: context.getString(R.string.unknown_error))
             }
         }
     }
@@ -377,7 +371,7 @@ class DetailsViewModel @Inject constructor(
 
                 _editCaption.value = UiState.Success(result)
             }catch (e: Exception) {
-                _editCaption.value = UiState.Error(e.message ?: "Unknown error")
+                _editCaption.value = UiState.Error(e.message ?: context.getString(R.string.unknown_error))
             }
         }
 

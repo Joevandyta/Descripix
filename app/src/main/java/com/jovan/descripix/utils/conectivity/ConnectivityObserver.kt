@@ -1,4 +1,4 @@
-package com.jovan.descripix.data.source.remote.network
+package com.jovan.descripix.utils.conectivity
 
 import kotlinx.coroutines.flow.Flow
 

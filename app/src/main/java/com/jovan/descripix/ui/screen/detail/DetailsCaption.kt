@@ -1,7 +1,5 @@
 package com.jovan.descripix.ui.screen.detail
 
-import FloatingToolbar
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutLinearInEasing
@@ -35,9 +33,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -75,17 +75,23 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.jovan.descripix.R
 import com.jovan.descripix.data.source.local.entity.CaptionEntity
+import com.jovan.descripix.ui.common.ModalType
+import com.jovan.descripix.ui.common.SocialMediaPackage
 import com.jovan.descripix.ui.common.UiState
 import com.jovan.descripix.ui.component.DateTimePickerModal
+import com.jovan.descripix.ui.component.FloatingToolbar
 import com.jovan.descripix.ui.component.MetadataDateItem
 import com.jovan.descripix.ui.component.MetadataItem
 import com.jovan.descripix.ui.component.ShareList
+import com.jovan.descripix.ui.component.TaskFailedModal
 import com.jovan.descripix.ui.theme.DescripixTheme
-import com.jovan.descripix.utils.simpleToast
+import com.jovan.descripix.utils.shareContent
+import com.jovan.descripix.utils.shareToSpecificApp
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailScreen(
     captionEntity: CaptionEntity,
@@ -100,13 +106,11 @@ fun DetailScreen(
     val deleteCaptionState by viewModel.deleteCaption.collectAsStateWithLifecycle()
 
     var isShareExpanded by remember { mutableStateOf(false) }
-    //to check if caption is saved in start
     var isInitialCaptionSave by remember { mutableStateOf(false) }
-    var toogleSaveActive by remember { mutableStateOf(false) }
+    var toggleSaveActive by remember { mutableStateOf(false) }
     var isGenerateButtonActive by remember { mutableStateOf(true) }
     var isToggleSaveEnabled by remember { mutableStateOf(true) }
 
-    // State untuk setiap metadata field
     var captionText by remember { mutableStateOf(captionEntity.caption ?: "") }
     var author by remember { mutableStateOf(captionEntity.author ?: "") }
     var selectedDate by remember { mutableStateOf(captionEntity.date ?: "") }
@@ -122,6 +126,8 @@ fun DetailScreen(
 
     val sessionState by viewModel.sessionState.collectAsStateWithLifecycle()
     val captionState by viewModel.captionEntityState.collectAsStateWithLifecycle()
+    var visibleModal by remember { mutableStateOf<ModalType?>(null) }
+
     BackHandler {
         onBack()
     }
@@ -130,13 +136,11 @@ fun DetailScreen(
         viewModel.resetAllStates()
         if (captionEntity.id > 0) {
             isInitialCaptionSave = true
-            toogleSaveActive = true
+            toggleSaveActive = true
         } else {
             isInitialCaptionSave = false
-            toogleSaveActive = false
+            toggleSaveActive = false
         }
-        Log.d("DetailScreen- LaunchedEffect", "isInitialCaptionSave : $isInitialCaptionSave")
-        Log.d("DetailScreen- LaunchedEffect", "toogleSaveActive : $toogleSaveActive")
         viewModel.getSession(context)
         viewModel.setCaptionEntity(captionEntity)
     }
@@ -149,34 +153,8 @@ fun DetailScreen(
         model,
         captionState
     ) {
-        Log.d("DetailScreen- LaunchedEffect", "captionID : ${captionState?.id}")
-        Log.d(
-            "DetailScreen- LaunchedEffect",
-            "captionText: $captionText, caption Text Entity: ${captionState?.caption}"
-        )
-        Log.d(
-            "DetailScreen- LaunchedEffect",
-            "Author: $author, caption Location Entity: ${captionState?.author}"
-        )
-        Log.d(
-            "DetailScreen- LaunchedEffect",
-            "selectedDate: $selectedDate, caption Date Entity: ${captionState?.date}"
-        )
-        Log.d(
-            "DetailScreen- LaunchedEffect",
-            "location: $location, caption Location Entity: ${captionState?.location}"
-        )
-        Log.d(
-            "DetailScreen- LaunchedEffect",
-            "device: $device, caption Device Entity: ${captionState?.device}"
-        )
-        Log.d(
-            "DetailScreen- LaunchedEffect",
-            "model: $model, caption Model Entity: ${captionState?.model}"
-        )
-
         captionState?.let { state ->
-            toogleSaveActive = !(captionText != state.caption
+            toggleSaveActive = !(captionText != state.caption
                     || author != state.author
                     || selectedDate != state.date
                     || location != state.location
@@ -188,6 +166,15 @@ fun DetailScreen(
     when (editCaptionState) {
         is UiState.Loading -> {
             isToggleSaveEnabled = false
+            Box(
+                contentAlignment = Alignment.TopCenter,
+                modifier = modifier
+                    .fillMaxSize()
+            ) {
+                LinearProgressIndicator(
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
         }
 
         is UiState.Success -> {
@@ -207,12 +194,24 @@ fun DetailScreen(
                         )
                     }
                     isInitialCaptionSave = true
-                    toogleSaveActive = true
-                    Log.d("DetailScreen", "EditedCaption : $captionState")
+                    toggleSaveActive = true
                 } else {
-                    simpleToast(context, "Failed to save edited caption")
+                    visibleModal = ModalType.EDITFAILED
                 }
-
+            }
+            AnimatedVisibility(
+                visible = visibleModal == ModalType.EDITFAILED,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                BasicAlertDialog(
+                    onDismissRequest = { visibleModal = null },
+                ) {
+                    TaskFailedModal(
+                        text = editedCaption.message.toString(),
+                        onClick = { visibleModal = null },
+                    )
+                }
             }
             isToggleSaveEnabled = true
         }
@@ -224,11 +223,19 @@ fun DetailScreen(
     when (savedCaptionState) {
         is UiState.Loading -> {
             isToggleSaveEnabled = false
+            Box(
+                contentAlignment = Alignment.TopCenter,
+                modifier = modifier
+                    .fillMaxSize()
+            ) {
+                LinearProgressIndicator(
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
         }
 
         is UiState.Success -> {
             val savedCaption = (savedCaptionState as UiState.Success).data
-            Log.d("DetailScreen", "New ID : ${savedCaption.data?.id}")
             LaunchedEffect(savedCaptionState) {
                 if (
                     savedCaption.status &&
@@ -246,13 +253,26 @@ fun DetailScreen(
                         )
                     )
                     isInitialCaptionSave = true
-                    toogleSaveActive = true
-                    Log.d("DetailScreen", "SavedCaption $captionState")
+                    toggleSaveActive = true
                 } else {
-                    simpleToast(context, savedCaption.message.toString())
+                    visibleModal = ModalType.SAVEFAILED
+                }
+
+            }
+            AnimatedVisibility(
+                visible = visibleModal == ModalType.SAVEFAILED,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                BasicAlertDialog(
+                    onDismissRequest = { visibleModal = null },
+                ) {
+                    TaskFailedModal(
+                        text = savedCaption.message.toString(),
+                        onClick = { visibleModal = null },
+                    )
                 }
             }
-
             isToggleSaveEnabled = true
         }
 
@@ -265,22 +285,44 @@ fun DetailScreen(
     when (deleteCaptionState) {
         is UiState.Loading -> {
             isToggleSaveEnabled = false
+            Box(
+                contentAlignment = Alignment.TopCenter,
+                modifier = modifier
+                    .fillMaxSize()
+            ) {
+                LinearProgressIndicator(
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
         }
 
         is UiState.Success -> {
             val deletedCaption = (deleteCaptionState as UiState.Success).data
-            Log.d("DetailScreen", "New ID ")
             LaunchedEffect(deleteCaptionState) {
                 if (deletedCaption.status) {
                     viewModel.clearCaptionEntity()
                     isInitialCaptionSave = false
-                    toogleSaveActive = false
-                    Log.d("DetailScreen", "DeleteCaption $captionState")
+                    toggleSaveActive = false
                 } else {
-                    simpleToast(context, deletedCaption.message.toString())
+                    visibleModal = ModalType.DELETEFAILED
                 }
             }
             isToggleSaveEnabled = true
+
+            AnimatedVisibility(
+                visible = visibleModal == ModalType.DELETEFAILED,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                BasicAlertDialog(
+                    onDismissRequest = { visibleModal = null },
+                ) {
+                    TaskFailedModal(
+                        text = deletedCaption.message.toString(),
+                        onClick = { visibleModal = null },
+                    )
+                }
+            }
         }
 
         is UiState.Error -> {
@@ -304,11 +346,27 @@ fun DetailScreen(
 
         is UiState.Success -> {
             val generatedCaption = (generatedCaptionState as UiState.Success).data
-            if (generatedCaption.status) {
-                LaunchedEffect(generatedCaptionState) {
+            LaunchedEffect(generatedCaptionState) {
+                if (generatedCaption.status) {
                     if (generatedCaption.data != null) {
                         captionText = generatedCaption.data.caption
                     }
+                } else {
+                    visibleModal = ModalType.GENERATEfAILED
+                }
+            }
+            AnimatedVisibility(
+                visible = visibleModal == ModalType.GENERATEfAILED,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                BasicAlertDialog(
+                    onDismissRequest = { visibleModal = null },
+                ) {
+                    TaskFailedModal(
+                        text = generatedCaption.message.toString(),
+                        onClick = { visibleModal = null },
+                    )
                 }
             }
             isGenerateButtonActive = true
@@ -396,16 +454,72 @@ fun DetailScreen(
                         }
                     ) {
                         ShareList(
-                            onClickShareWhatsApp = {},
-                            onClickShareInstagram = { },
-                            onClickShareFacebook = {},
-                            onClickShareThreads = {},
-                            onCLickShareX = {},
+                            onClickShareWhatsApp = {
+                                captionState?.image?.let {
+                                    shareToSpecificApp(
+                                        context = context,
+                                        packageName = SocialMediaPackage.WHATSAPP,
+                                        text = captionText,
+                                        imageUri = it.toUri()
+                                    )
+                                }
+                            },
+                            onClickShareInstagram = {
+                                captionState?.image?.let {
+                                    shareToSpecificApp(
+                                        context = context,
+                                        packageName = SocialMediaPackage.INSTAGRAM,
+                                        text = captionText,
+                                        imageUri = it.toUri()
+                                    )
+                                }
+                            },
+                            onClickShareFacebook = {
+                                captionState?.image?.let {
+                                    shareToSpecificApp(
+                                        context = context,
+                                        packageName = SocialMediaPackage.FACEBOOK,
+                                        text = captionText,
+                                        imageUri = it.toUri()
+                                    )
+                                }
+                            },
+                            onClickShareThreads = {
+                                captionState?.image?.let {
+                                    shareToSpecificApp(
+                                        context = context,
+                                        packageName = SocialMediaPackage.THREADS,
+                                        text = captionText,
+                                        imageUri = it.toUri()
+                                    )
+                                }
+
+                            },
+                            onCLickShareX = {
+                                captionState?.image?.let {
+                                    shareToSpecificApp(
+                                        context = context,
+                                        packageName = SocialMediaPackage.X,
+                                        text = captionText,
+                                        imageUri = it.toUri()
+                                    )
+                                }
+
+                            },
+                            onGeneralShare = {
+                                captionState?.image?.let {
+                                    shareContent(
+                                        context = context,
+                                        text = captionText,
+                                        imageUri = it.toUri()
+                                    )
+                                }
+                            }
                         )
                     }
                     if (!(sessionState as UiState.Success).data.isLogin) {
                         Text(
-                            text = "login to save caption result",
+                            text = stringResource(R.string.sign_in_to_save),
 
                             style = MaterialTheme.typography.bodyLarge.copy(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -447,10 +561,10 @@ fun DetailScreen(
                         onLoginClicked = {
                             viewModel.login(context)
                         },
-                        toogleSaveActive = toogleSaveActive,
+                        toogleSaveActive = toggleSaveActive,
                         isToogleSaveEnabled = isToggleSaveEnabled,
                         onSaveClicked = {
-                            if (!toogleSaveActive) {
+                            if (!toggleSaveActive) {
                                 //Save
                                 if (!isInitialCaptionSave) {
                                     //Save
@@ -465,7 +579,6 @@ fun DetailScreen(
                                         token = session.data.token,
                                         context = context
                                     )
-                                    simpleToast(context, "Saved")
                                 } else {
                                     //Edit
                                     captionState?.let {
@@ -482,7 +595,6 @@ fun DetailScreen(
                                             context = context
                                         )
                                     }
-                                    simpleToast(context, "Edited")
                                 }
                             } else {
                                 //Delete
@@ -504,6 +616,7 @@ fun DetailScreen(
 
         }
     }
+
 }
 
 @Composable
@@ -555,7 +668,6 @@ fun DetailContent(
                     val formattedDate = formatter.format(Date(it))
                     // Update the selected date state
                     onDateChange(formattedDate)
-                    Log.d("DetailScreen", "DetailContent: $selectedDate")
                 }
                 showDatePicker = false
             },
@@ -568,7 +680,7 @@ fun DetailContent(
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
     ) {
-        val (header, caption, textHelper, metadata, space) = createRefs()
+        val (header, caption, textHelperZoom, textHelperMeta, metadata, space) = createRefs()
 
         ConstraintLayout(
             modifier = Modifier
@@ -589,7 +701,7 @@ fun DetailContent(
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                    contentDescription = "Back"
+                    contentDescription = stringResource(R.string.back)
                 )
             }
             Card(
@@ -667,12 +779,23 @@ fun DetailContent(
             }
 
         }
+        Text(
+            text = stringResource(R.string.pinch_to_zoom_image),
+            textAlign = TextAlign.Center,
+            fontSize = 14.sp,
+            modifier = Modifier
+                .constrainAs(textHelperZoom) {
+                    top.linkTo(header.bottom)
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                }
 
+        )
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .constrainAs(caption) {
-                    top.linkTo(header.bottom)
+                    top.linkTo(textHelperZoom.bottom)
                     start.linkTo(parent.start)
                     end.linkTo(parent.end)
                 }
@@ -737,7 +860,7 @@ fun DetailContent(
                         ) {
                             Icon(
                                 painter = painterResource(R.drawable.ic_copy),
-                                contentDescription = "Generate"
+                                contentDescription = stringResource(R.string.copy)
                             )
                         }
                     }
@@ -746,23 +869,23 @@ fun DetailContent(
         }
 
         Text(
-            text = "pilih data yang diinginkan untuk ditambahkan ke dalam caption." +
-                    "Gunakan 2 jari untuk Zoom gambar",
+            text = stringResource(R.string.select_the_data_to_be_added_to_the_caption),
             textAlign = TextAlign.Center,
             fontSize = 14.sp,
             modifier = Modifier
-                .constrainAs(textHelper) {
+                .constrainAs(textHelperMeta) {
                     top.linkTo(caption.bottom)
                     start.linkTo(parent.start)
                     end.linkTo(parent.end)
                 }
         )
+
         ConstraintLayout(
             modifier = modifier
                 .fillMaxWidth()
                 .padding(4.dp)
                 .constrainAs(metadata) {
-                    top.linkTo(textHelper.bottom)
+                    top.linkTo(textHelperMeta.bottom)
                     start.linkTo(parent.start)
                     end.linkTo(parent.end)
                 }
@@ -787,7 +910,7 @@ fun DetailContent(
                 ) {
                     val (left, right) = createRefs()
                     Text(
-                        text = "Metadata",
+                        text = stringResource(R.string.image_metadata),
                         style = MaterialTheme.typography.bodyLarge.copy(
                             fontSize = 20.sp
                         ),
@@ -811,7 +934,7 @@ fun DetailContent(
                     ) {
                         Icon(
                             imageVector = if (isMetadataExpanded) Icons.Filled.KeyboardArrowDown else Icons.Filled.KeyboardArrowUp,
-                            contentDescription = if (isMetadataExpanded) "Show less" else "Show more"
+                            contentDescription = if (isMetadataExpanded) stringResource(R.string.show_less) else stringResource(R.string.show_more)
                         )
                     }
                 }
@@ -865,7 +988,7 @@ fun DetailContent(
                     )
 
                     MetadataItem(
-                        label = "Location",
+                        label = stringResource(R.string.location),
                         value = location,
                         onValueChange = onLocationChange,
                         checked = isLocationChecked,
@@ -877,7 +1000,7 @@ fun DetailContent(
                         color = MaterialTheme.colorScheme.onBackground
                     )
                     MetadataItem(
-                        label = "Device",
+                        label = stringResource(R.string.device),
                         value = device,
                         onValueChange = onDeviceChange,
                         checked = isDeviceChecked,

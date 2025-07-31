@@ -1,14 +1,11 @@
 package com.jovan.descripix.ui.screen.profile
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -87,10 +84,10 @@ import coil.compose.AsyncImage
 import com.jovan.descripix.R
 import com.jovan.descripix.data.source.local.entity.UserEntity
 import com.jovan.descripix.data.source.remote.request.UserRequest
-import com.jovan.descripix.domain.model.Language
+import com.jovan.descripix.ui.common.Language
+import com.jovan.descripix.ui.common.ModalType
 import com.jovan.descripix.ui.common.UiState
 import com.jovan.descripix.ui.component.ComingSoonModal
-import com.jovan.descripix.ui.component.LanguageCard
 import com.jovan.descripix.ui.component.LogoutModal
 import com.jovan.descripix.ui.component.SettingCard
 import com.jovan.descripix.ui.component.TaskFailedModal
@@ -99,9 +96,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-enum class ModalType {
-    COMING_SOON, EDIT_PROFILE, TASKFAILED, LOGOUT
-}
 
 @Composable
 fun ProfileScreen(
@@ -111,9 +105,9 @@ fun ProfileScreen(
 
     val context = LocalContext.current
     val sessionState by viewModel.sessionState.collectAsStateWithLifecycle()
-    val logoutState by viewModel.logoutState.collectAsStateWithLifecycle()
     val isConnected by viewModel.isConnected.collectAsStateWithLifecycle()
     val updateUserState by viewModel.updateUserState.collectAsStateWithLifecycle()
+
     LaunchedEffect(Unit) {
         viewModel.initializeLanguage(context)
         viewModel.resetAllStates()
@@ -139,7 +133,6 @@ fun ProfileScreen(
                         session.data.token,
                         context
                     )
-                    Log.d("ProfileScreen", "Fetching user detail")
                 }
                 LaunchedEffect(updateUserState) {
                     if (updateUserState is UiState.Success) {
@@ -153,9 +146,6 @@ fun ProfileScreen(
                 }
                 AutenticatedDisplay(modifier = modifier)
 
-                if (logoutState is UiState.Success) {
-                    Log.d("ProfileScreen", "Logout Success")
-                }
             } else {
                 GuestDisplay()
             }
@@ -309,7 +299,7 @@ fun GuestDisplay(
             ) {
                 Image(
                     painter = painterResource(R.drawable.profile_placeholder),
-                    contentDescription = "User Profile",
+                    contentDescription = stringResource(R.string.user_profile),
                     modifier = Modifier
                         .size(150.dp)
                         .padding(8.dp)
@@ -327,12 +317,26 @@ fun GuestDisplay(
 
         Button(
             onClick = {
-                //TODO
+                viewModel.login(context)
             },
-            modifier = Modifier.padding(top = 16.dp)
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.onSurface
+            ),
+            modifier = Modifier
+                .wrapContentWidth()
+                .padding(start = 8.dp, end = 8.dp),
+            elevation = ButtonDefaults.buttonElevation(2.dp)
         ) {
+            Image(
+                painter = painterResource(id = R.drawable.ic_google),
+                contentDescription = stringResource(R.string.sign_in_button)
+            )
+            Spacer(modifier = Modifier.size(8.dp))
             Text(
-                text = "Sign in"
+                text = stringResource(R.string.sign_in),
+                color = Color.Black,
+                fontWeight = FontWeight.Bold
             )
         }
 
@@ -349,7 +353,7 @@ fun GuestDisplay(
                     modifier = Modifier
                         .fillMaxWidth()
                 ) {
-                    val (language, divider2, about, languageModal) = createRefs()
+                    val (language, divider2, about) = createRefs()
 
                     Box(
                         modifier = Modifier
@@ -454,7 +458,6 @@ fun AutenticatedDisplay(
     val userDetailState by viewModel.userDetailState.collectAsStateWithLifecycle()
     val updateUserState by viewModel.updateUserState.collectAsStateWithLifecycle()
     val sessionState by viewModel.sessionState.collectAsStateWithLifecycle()
-    val isConnected by viewModel.isConnected.collectAsStateWithLifecycle()
     val logoutState by viewModel.logoutState.collectAsStateWithLifecycle()
     val currentLanguageState by viewModel.selectedLanguage.collectAsStateWithLifecycle()
     var isButtonAcivated by remember { mutableStateOf(true) }
@@ -471,7 +474,12 @@ fun AutenticatedDisplay(
         }
 
         is UiState.Success -> {
-            Log.d("ProfileScreen", "Logout Success")
+            val logout = (logoutState as UiState.Success).data
+            LaunchedEffect(logoutState) {
+                if (!logout.status) {
+                    visibleModal = ModalType.TASKFAILED
+                }
+            }
         }
 
         is UiState.Error -> {}
@@ -484,7 +492,6 @@ fun AutenticatedDisplay(
             ) {
                 CircularProgressIndicator()
             }
-            Log.d("ProfileScreen", "Loading User Detail")
         }
 
         is UiState.Success -> {
@@ -607,7 +614,7 @@ fun AutenticatedDisplay(
                     ) {
                         AsyncImage(
                             model = userDetail.profileImg,
-                            contentDescription = "User Profile",
+                            contentDescription = stringResource(R.string.user_profile),
                             modifier = Modifier
                                 .size(150.dp)
                                 .padding(8.dp)
@@ -649,7 +656,7 @@ fun AutenticatedDisplay(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Edit,
-                                contentDescription = "Edit Profile",
+                                contentDescription = stringResource(R.string.edit_profile),
                                 modifier = Modifier
                                     .padding(4.dp)
                             )
@@ -658,7 +665,7 @@ fun AutenticatedDisplay(
                             modifier = Modifier.padding(16.dp)
                         ) {
                             Text(
-                                text = "About Me",
+                                text = stringResource(R.string.about_me),
                                 style = MaterialTheme.typography.titleMedium,
                                 color = MaterialTheme.colorScheme.onSurface,
                                 fontWeight = FontWeight.SemiBold
@@ -695,7 +702,7 @@ fun AutenticatedDisplay(
                                 .padding(top = 8.dp, bottom = 16.dp)
                         ) {
                             Text(
-                                text = "Birth Date",
+                                text = stringResource(R.string.birth_date),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -724,7 +731,7 @@ fun AutenticatedDisplay(
                                 .padding(top = 8.dp, bottom = 16.dp)
                         ) {
                             Text(
-                                text = "Gender",
+                                text = stringResource(R.string.gender),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -750,7 +757,7 @@ fun AutenticatedDisplay(
                         modifier
                             .fillMaxWidth()
                     ) {
-                        val (language, divider2, about, divider3, logout, languageModal) = createRefs()
+                        val (language, divider2, about, divider3, logout) = createRefs()
 
                         Box(
                             modifier = Modifier
@@ -834,7 +841,6 @@ fun AutenticatedDisplay(
                             stringResource(R.string.logout),
                             onClick = {
                                 visibleModal = ModalType.LOGOUT
-                                Log.d("ProfileScreen", "Logout")
                             },
                             modifier = Modifier
                                 .constrainAs(logout) {
@@ -848,26 +854,25 @@ fun AutenticatedDisplay(
                 }
             }
 
-            if (visibleModal != null) {
 
-                Log.d("ProfileScreen", "Visible MOdal = $visibleModal")
-                AnimatedVisibility(
-                    visible = visibleModal != null,
-                    enter = scaleIn(tween(300)) + fadeIn(tween(300)),
-                    exit = scaleOut(tween(200)) + fadeOut(tween(200))
+            AnimatedVisibility(
+                visible = visibleModal != null,
+                enter = scaleIn(tween(300)) + fadeIn(tween(300)),
+                exit = scaleOut(tween(200)) + fadeOut(tween(200))
+            ) {
+                BasicAlertDialog(
+                    onDismissRequest = { visibleModal = null },
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .fillMaxWidth(),
+                    properties = DialogProperties(
+                        usePlatformDefaultWidth = false,
+                        dismissOnBackPress = false,
+                        dismissOnClickOutside = false,
+                    )
                 ) {
-                    BasicAlertDialog(
-                        onDismissRequest = { visibleModal = null },
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .fillMaxWidth(),
-                        properties = DialogProperties(
-                            usePlatformDefaultWidth = false,
-                            dismissOnBackPress = false,
-                            dismissOnClickOutside = false,
-                        )
-                    ) {
-                        if (visibleModal == ModalType.COMING_SOON){
+                    when (visibleModal) {
+                        ModalType.COMING_SOON -> {
                             ComingSoonModal(
                                 onClick = {
                                     visibleModal = null
@@ -875,16 +880,12 @@ fun AutenticatedDisplay(
                                 modifier = Modifier
                                     .width(300.dp)
                             )
-                        }else if (visibleModal == ModalType.EDIT_PROFILE){
+                        }
+
+                        ModalType.EDIT_PROFILE -> {
                             EditProfile(
                                 onConfirmClicked = { newUserData ->
-                                    Log.d(
-                                        "ProfileScreen-onConfirmClicked",
-                                        "New User Data: $newUserData"
-                                    )
                                     val session = (sessionState as UiState.Success)
-                                    Log.d("ProfileScreen-onConfirmClicked", "New User Data: $session")
-
                                     if (session.data.isLogin) {
                                         viewModel.updateUserDetail(
                                             newUserData,
@@ -901,7 +902,9 @@ fun AutenticatedDisplay(
                                 modifier = Modifier
                                     .fillMaxWidth()
                             )
-                        }else if (visibleModal == ModalType.TASKFAILED){
+                        }
+
+                        ModalType.TASKFAILED -> {
                             TaskFailedModal(
                                 text = stringResource(R.string.please_try_again),
                                 onClick = {
@@ -910,7 +913,9 @@ fun AutenticatedDisplay(
                                 modifier = Modifier
                                     .width(300.dp)
                             )
-                        }else if (visibleModal == ModalType.LOGOUT){
+                        }
+
+                        ModalType.LOGOUT -> {
                             LogoutModal(
                                 onLogoutConfirm = {
                                     viewModel.logout(context)
@@ -920,6 +925,8 @@ fun AutenticatedDisplay(
                                 }
                             )
                         }
+
+                        else -> {}
                     }
                 }
             }
@@ -936,7 +943,6 @@ fun AutenticatedDisplay(
                 }
 
                 is UiState.Success -> {
-                    Log.d("ProfileScreen - updateUserResponse", "Success")
                     val updateResponse = (updateUserState as UiState.Success).data
                     if (updateResponse.status) {
                         LaunchedEffect(updateUserState) {
@@ -946,15 +952,16 @@ fun AutenticatedDisplay(
                         LaunchedEffect(updateResponse) {
                             visibleModal = ModalType.TASKFAILED
                         }
-                        Log.d("ProfileScreen", "Visible MOdal = $visibleModal")
                     }
                     isButtonAcivated = true
                 }
+
                 is UiState.Error -> {
                     isButtonAcivated = true
                 }
             }
         }
+
         is UiState.Error -> {}
     }
 }
@@ -996,7 +1003,7 @@ fun EditProfile(
             val (titleText, editAbout, editGender, editBirthdate, confirmButton) = createRefs()
 
             Text(
-                text = "Edit Profile",
+                text = stringResource(R.string.edit_profile),
                 style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                 modifier = Modifier.constrainAs(titleText) {
@@ -1011,7 +1018,7 @@ fun EditProfile(
                 value = aboutText,
                 onValueChange = { aboutText = it },
                 label = { Text(stringResource(R.string.about_me)) },
-                placeholder = { Text("Tell us about yourself...") },
+                placeholder = { Text(stringResource(R.string.tell_us_about_yourself)) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(120.dp)
@@ -1041,13 +1048,12 @@ fun EditProfile(
                     value = gender,
                     onValueChange = { },
                     readOnly = true,
-                    label = { Text("Gender") },
-                    placeholder = { Text("Select gender") },
+                    label = { Text(stringResource(R.string.gender)) },
+                    placeholder = { Text(stringResource(R.string.select_gender)) },
                     trailingIcon = {
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = showGenderMenu)
                     },
                     modifier = Modifier
-                        .menuAnchor()
                         .fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -1076,16 +1082,15 @@ fun EditProfile(
                 value = birthdate,
                 onValueChange = { },
                 readOnly = true,
-                label = { Text("Birthdate") },
-                placeholder = { Text("Select birthdate") },
+                label = { Text(stringResource(R.string.birth_date)) },
+                placeholder = { Text(stringResource(R.string.select_birthdate)) },
                 trailingIcon = {
                     IconButton(onClick = {
-                        Log.d("EditProfile", "Icon birthdate clicked")
                         showDatePicker = true
                     }) {
                         Icon(
                             imageVector = Icons.Default.DateRange,
-                            contentDescription = "Select date"
+                            contentDescription = stringResource(R.string.select_date)
                         )
                     }
                 },
@@ -1097,7 +1102,6 @@ fun EditProfile(
                         end.linkTo(parent.end)
                     }
                     .clickable {
-                        Log.d("EditProfile", "birthdate clicked")
                         showDatePicker = true
                     },
                 colors = OutlinedTextFieldDefaults.colors(
@@ -1128,7 +1132,7 @@ fun EditProfile(
                         contentColor = MaterialTheme.colorScheme.onSecondary
                     )
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
                 Spacer(
                     modifier = Modifier
@@ -1154,7 +1158,7 @@ fun EditProfile(
                         contentColor = MaterialTheme.colorScheme.onPrimary
                     )
                 ) {
-                    Text("Confirm")
+                    Text(stringResource(R.string.confirm))
                 }
 
             }
@@ -1185,7 +1189,6 @@ fun EditProfile(
         }
     }
 }
-
 
 
 @Preview(showBackground = true)

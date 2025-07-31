@@ -30,7 +30,6 @@ import androidx.compose.ui.window.DialogProperties
 import com.jovan.descripix.R
 import com.jovan.descripix.ui.theme.DescripixTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskFailedModal(
     text: String,

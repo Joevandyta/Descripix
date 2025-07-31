@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name" translatable="false">Descripix</string>
-    <string name="string_login" translatable="false">Login</string>
     <string name="logout" translatable="false">Logout</string>
 <!--    <string name="caption">Caption</string>-->
     <string name="Home_fragment_guest_view">SIGN IN TO SAVE AND VIEW CAPTIONS</string>
@@ -28,7 +27,7 @@
     <string name="string_author">Author</string>
     <string name="string_date">Date</string>
     <string name="model">Model</string>
-    <string name="login">Login</string>
+    <string name="sign_in" translatable="false">Sign in</string>
     <string name="this_feature_is_under_development">This Feature Is Under Development</string>
     <string name="task_failed">Task Failed</string>
     <string name="unexpected_type_of_error">Unexpected type of error</string>
@@ -36,5 +35,45 @@
     <string name="you_are_not_authenticated_click_button_below_to_sign_in">You are not authenticated, click button below to sign in</string>
     <string name="please_try_again">Please try again</string>
     <string name="are_you_sure_you_want_to_log_out">Are you sure you want to log out?</string>
+    <string name="show_less">Show less</string>
+    <string name="show_more">Show more</string>
+    <string name="next">Next</string>
+    <string name="cancel">Cancel</string>
+    <string name="select_time">Select Time</string>
+    <string name="back">Back</string>
+    <string name="file_is_not_supported">File is not supported</string>
+    <string name="there_is_no_image_selected">There is no image selected</string>
+    <string name="generate" translatable="false">Generate</string>
+    <string name="copy">Copy</string>
+    <string name="select_the_data_to_be_added_to_the_caption">Select the data to be added to the caption.</string>
+    <string name="pinch_to_zoom_image">Pinch to zoom image</string>
+    <string name="share_via">Share via</string>
+    <string name="share_button">share button</string>
+    <string name="share_to_facebook">share to Facebook</string>
+    <string name="share_to_x">share to X</string>
+    <string name="share_to_threads">share to Threads</string>
+    <string name="shared_content">Shared content</string>
+    <string name="error_reading_metadata">Error reading metadata</string>
+    <string name="cons_author" translatable="false">Author</string>
+    <string name="cons_date_taken" translatable="false">Date Taken</string>
+    <string name="cons_location" translatable="false">Location</string>
+    <string name="cons_device" translatable="false">Device</string>
+    <string name="cons_model" translatable="false">Model</string>
+    <string name="descripix_logo" translatable="false">Descripix Logo</string>
+    <string name="sign_in_button">Sign in Button</string>
+    <string name="you_don_t_have_any_captions_yet">You don\'t have any captions yet</string>
+    <string name="user_profile">User Profile</string>
+    <string name="edit_profile">Edit Profile</string>
+    <string name="confirm">Confirm</string>
+    <string name="select_date">Select date</string>
+    <string name="select_birthdate">Select birth date</string>
+    <string name="tell_us_about_yourself">Tell us about yourself…</string>
+    <string name="birth_date">Birth Date</string>
+    <string name="gender">Gender</string>
+    <string name="select_gender">Select gender</string>
+    <string name="sign_in_to_save">Sign in to save</string>
+    <string name="image_metadata">Image Metadata</string>
+    <string name="location">Location</string>
+    <string name="device">Device</string>
 
 </resources>

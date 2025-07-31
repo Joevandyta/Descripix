@@ -1,5 +1,6 @@
 package com.jovan.descripix.ui.component
 
+import android.util.Log
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -16,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.jovan.descripix.R
@@ -29,6 +31,7 @@ fun ShareList(
     onClickShareFacebook: () -> Unit,
     onClickShareThreads: () -> Unit,
     onCLickShareX: () -> Unit,
+    onGeneralShare: () -> Unit
 ) {
 
     Card(
@@ -88,7 +91,7 @@ fun ShareList(
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_thread),
-                    contentDescription = "share to Threads",
+                    contentDescription = stringResource(R.string.share_to_threads),
                     tint = Color.Unspecified,
                     modifier = Modifier
                         .fillMaxSize(0.75f)
@@ -103,7 +106,7 @@ fun ShareList(
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_x),
-                    contentDescription = "share to X",
+                    contentDescription = stringResource(R.string.share_to_x),
                     tint = Color.Unspecified,
                     modifier = Modifier
                         .fillMaxSize(0.75f)
@@ -119,7 +122,7 @@ fun ShareList(
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_facebook),
-                    contentDescription = "share to Facebook",
+                    contentDescription = stringResource(R.string.share_to_facebook),
                     tint = Color.Unspecified,
                     modifier = Modifier
                         .fillMaxSize(0.75f)
@@ -127,7 +130,8 @@ fun ShareList(
             }
             //Share General
             IconButton(
-                onClick = {},
+                onClick = onGeneralShare
+                ,
                 enabled = true,
                 modifier = Modifier
                     .wrapContentWidth()
@@ -135,7 +139,7 @@ fun ShareList(
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_share),
-                    contentDescription = "share button",
+                    contentDescription = stringResource(R.string.share_button),
                     tint = Color.Unspecified,
                     modifier = Modifier
                         .fillMaxSize(0.75f)
@@ -155,7 +159,8 @@ fun ShareListPreview() {
             onClickShareInstagram = {},
             onClickShareFacebook = {},
             onClickShareThreads = {},
-            onCLickShareX = {}
+            onCLickShareX = {},
+            onGeneralShare = {}
         )
     }
 }

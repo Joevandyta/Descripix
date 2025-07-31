@@ -1,12 +1,10 @@
 package com.jovan.descripix.domain.repository
 
-import androidx.datastore.preferences.core.edit
 import com.jovan.descripix.data.source.local.datastore.SessionData
 import com.jovan.descripix.data.source.local.entity.CaptionEntity
 import com.jovan.descripix.data.source.local.entity.UserEntity
-import com.jovan.descripix.domain.model.Language
+import com.jovan.descripix.ui.common.Language
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 
 interface ILocalDataSource {
     suspend fun saveSession(user: SessionData)

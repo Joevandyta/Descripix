@@ -14,27 +14,26 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingExcept
 import com.jovan.descripix.R
 import com.jovan.descripix.data.source.local.datastore.SessionData
 import com.jovan.descripix.data.source.local.entity.CaptionEntity
-import com.jovan.descripix.data.source.remote.network.ConnectivityObserver
 import com.jovan.descripix.data.source.remote.response.ApiResponse
 import com.jovan.descripix.data.source.remote.response.CaptionDataResponse
 import com.jovan.descripix.data.source.remote.response.LoginResponse
 import com.jovan.descripix.domain.usecase.DescripixUseCase
 import com.jovan.descripix.ui.common.UiState
+import com.jovan.descripix.utils.credential.CredentialService
+import com.jovan.descripix.utils.credential.ICredentialService
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
+    private val credentialService: ICredentialService,
     private val descripixUseCase: DescripixUseCase
 ) :
     ViewModel() {
@@ -55,11 +54,10 @@ class HomeViewModel @Inject constructor(
     fun getSession(connected: Boolean, context: Context) {
         viewModelScope.launch {
             _sessionState.value = UiState.Loading
-            Log.d("HomeViewModel", "isConnected: $connected")
             descripixUseCase.getSession(context, connected)
                 .distinctUntilChanged()
                 .catch { e ->
-                    _sessionState.value = UiState.Error(e.message ?: "Unknown error")
+                    _sessionState.value = UiState.Error(e.message ?: context.getString(R.string.unknown_error))
                 }
                 .collect { session ->
                     if (_sessionState.value != UiState.Success(session)) {
@@ -78,59 +76,20 @@ class HomeViewModel @Inject constructor(
 
     fun login(context: Context) {
         _loginState.value = UiState.Loading
-
+        Log.d("HomeViewModel - login", "Run")
         viewModelScope.launch {
-            val result = runCatching {
-                val credentialManager = CredentialManager.create(context)
-                val googleIdOption = GetGoogleIdOption.Builder()
-                    .setFilterByAuthorizedAccounts(false)
-                    .setServerClientId(context.getString(R.string.client_id))
-                    .build()
-                val request = GetCredentialRequest.Builder()
-                    .addCredentialOption(googleIdOption)
-                    .build()
-                credentialManager.getCredential(request = request, context = context)
+            try {
+                val idToken = credentialService.getGoogleIdToken(context)
+                val loginResult = descripixUseCase.login(idToken, context)
+                _loginState.value = UiState.Success(loginResult)
+                Log.d("HomeViewModel - login", "Success")
 
-            }.onFailure { e ->
-                val msg = when (e) {
-                    is GetCredentialCancellationException -> context.getString(R.string.login_canceled_by_user)
-                    else -> e.message ?: context.getString(R.string.unknown_error)
-                }
-                _loginState.value = UiState.Error(msg)
-                return@launch
-            }.getOrNull()
+            } catch (e: Exception) {
+                _loginState.value = UiState.Error(e.message ?: "Unknown error")
+                Log.e("HomeViewModel - login", "Error")
 
-            result?.let {
-                when (val credential = result.credential) {
-                    is CustomCredential -> {
-                        if (credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
-                            try {
-                                val googleIdTokenCredential =
-                                    GoogleIdTokenCredential.createFrom(credential.data)
-                                Log.d(
-                                    "HomeViewModel",
-                                    "Token Google: ${googleIdTokenCredential.idToken}"
-                                )
-                                val idToken = googleIdTokenCredential.idToken
-
-                                val loginResult = descripixUseCase.login(idToken, context)
-                                _loginState.value = UiState.Success(loginResult)
-
-                            } catch (e: GoogleIdTokenParsingException) {
-                                _loginState.value = UiState.Error(context.getString(R.string.google_id_is_not_valid))
-                            }
-                        } else {
-                            _loginState.value =
-                                UiState.Error(context.getString(R.string.unexpected_type_of_credential))
-                        }
-                    }
-
-                    else -> {
-                        _loginState.value =
-                            UiState.Error(context.getString(R.string.unexpected_type_of_credential))
-                    }
-                }
             }
+
         }
     }
 
@@ -141,14 +100,17 @@ class HomeViewModel @Inject constructor(
 
     fun getAllCaptions(connected: Boolean, token: String, context: Context) {
         _captionListState.value = UiState.Loading
+        Log.e("HomeViewModel - getAllCaptions", "Run")
         viewModelScope.launch {
             descripixUseCase.getAllCaptions(connected, token, context)
                 .distinctUntilChanged()
                 .catch { e ->
-                    _captionListState.value = UiState.Error(e.message ?: "Unknown error")
+                    _captionListState.value = UiState.Error(e.message ?: context.getString(R.string.unknown_error))
                     Log.e("UiState.Error", "${e.message}")
                 }
                 .collect { data ->
+                    Log.e("HomeViewModel - getAllCaptions", "${data.size}")
+
                     _captionListState.value = UiState.Success(data)
                 }
         }
@@ -169,10 +131,9 @@ class HomeViewModel @Inject constructor(
                 try {
                     val response =
                         descripixUseCase.getCaptionDetails(id, currentSession.data.token, context)
-                    Log.d("HomeViewModel-getCaptionDetail", "getCaptionDetail: $response")
                     _captionDetailState.value = UiState.Success(response)
                 } catch (e: Exception) {
-                    _captionDetailState.value = UiState.Error(e.message ?: "Unknown error")
+                    _captionDetailState.value = UiState.Error(e.message ?: context.getString(R.string.unknown_error))
                 }
             }
         }
@@ -181,8 +142,6 @@ class HomeViewModel @Inject constructor(
     fun resetCaptionDetail() {
         _captionDetailState.value = UiState.Error("Not Started")
     }
-
-
     fun resetAllStates(){
         _sessionState.value = UiState.Loading
         _loginState.value = UiState.Loading
