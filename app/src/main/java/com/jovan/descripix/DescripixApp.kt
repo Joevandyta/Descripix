@@ -41,7 +41,7 @@ import com.jovan.descripix.ui.theme.DescripixTheme
 fun DescripixApp(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
-    viewModel: DetailsViewModel = hiltViewModel()
+    viewModel: DetailsViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -72,7 +72,6 @@ fun DescripixApp(
                 )
             }
             composable(Screen.Upload.route) {
-
                 val launcher = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.OpenDocument(),
                     onResult = { uri ->
@@ -103,9 +102,16 @@ fun DescripixApp(
                         }
                     }
                 )
+
                 LaunchedEffect(Unit) {
-                    launcher.launch(arrayOf("image/*"))
+                    viewModel.openImagePicker.collect {
+                        launcher.launch(arrayOf("image/*"))
+                    }
                 }
+                LaunchedEffect(Unit) {
+                    viewModel.requestPickImage(context)
+                }
+
                 LaunchedEffect(captionEntityState) {
                     if (captionEntityState != null) {
                         navController.navigate(Screen.DetailCaption.route) {
@@ -142,8 +148,6 @@ fun BottomBar(
     ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-
-
 
     NavigationBar(modifier = modifier) {
         val navigationItems = listOf(

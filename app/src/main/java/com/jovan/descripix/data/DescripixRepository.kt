@@ -12,13 +12,15 @@ import com.jovan.descripix.data.source.remote.request.CaptionRequest
 import com.jovan.descripix.data.source.remote.request.UserRequest
 import com.jovan.descripix.data.source.remote.response.ApiResponse
 import com.jovan.descripix.data.source.remote.response.CaptionDataResponse
+import com.jovan.descripix.data.source.remote.response.GenerateResponse
 import com.jovan.descripix.data.source.remote.response.LoginResponse
-import com.jovan.descripix.ui.common.Language
 import com.jovan.descripix.domain.repository.IDescripixRepository
+import com.jovan.descripix.ui.common.Language
 import com.jovan.descripix.utils.ImageConverter
 import com.jovan.descripix.utils.handleApiException
 import com.jovan.descripix.utils.reduceFileSize
 import com.jovan.descripix.utils.resizeIfTooLarge
+import com.jovan.descripix.utils.wrapEspressoIdlingResource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -40,38 +42,41 @@ class DescripixRepository @Inject constructor(
     //LocalDataSource
     override fun getSession(context: Context, isConnected: Boolean): Flow<SessionData> =
         localDataSource.getSession().map { session ->
-            Log.d("getSession", "Run")
-            var currentSession = session
-            if (currentSession.token.isBlank() || currentSession.refreshToken.isBlank()) {
-                localDataSource.logout()
-                return@map currentSession
-            }
-            if (isConnected) {
-                try {
-                    val tokenVerify =
-                        handleApiException { remoteDataSource.tokenVerify(currentSession.token) }
-                    if (!tokenVerify.status && !tokenVerify.message.toString()
-                            .contains("Connection Timeout")
-                    ) {
-                        val refreshed =
-                            handleApiException { remoteDataSource.refreshToken(currentSession.refreshToken) }
-                        if (refreshed.status) {
-                            currentSession = SessionData(
-                                refreshToken = currentSession.refreshToken,
-                                token = refreshed.data!!.access,
-                                isLogin = true
-                            )
-                            localDataSource.saveSession(currentSession)
-                        } else {
-                            localDataSource.logout()
-                            localDataSource.deleteUser()
-                        }
-                    }
-                } catch (e: Exception) {
-                    Log.e("REPO", e.message.toString())
+            wrapEspressoIdlingResource {
+                Log.d("getSession", "Run")
+                var currentSession = session
+                if (currentSession.token.isBlank() || currentSession.refreshToken.isBlank()) {
+                    localDataSource.logout()
+                    return@map currentSession
                 }
+                Log.d("repository-getSession", "isConnected : $isConnected")
+                if (isConnected) {
+                    try {
+                        val tokenVerify =
+                            handleApiException { remoteDataSource.tokenVerify(currentSession.token) }
+                        if (!tokenVerify.status && !tokenVerify.message.toString()
+                                .contains("Connection Timeout")
+                        ) {
+                            val refreshed =
+                                handleApiException { remoteDataSource.refreshToken(currentSession.refreshToken) }
+                            if (refreshed.status) {
+                                currentSession = SessionData(
+                                    refreshToken = currentSession.refreshToken,
+                                    token = refreshed.data!!.access,
+                                    isLogin = true
+                                )
+                                localDataSource.saveSession(currentSession)
+                            } else {
+                                localDataSource.logout()
+                                localDataSource.deleteUser()
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Log.e("REPO", e.message.toString())
+                    }
+                }
+                currentSession
             }
-            currentSession
         }.catch {
             emit(SessionData.empty())
         }
@@ -81,100 +86,118 @@ class DescripixRepository @Inject constructor(
         refresh: String,
         context: Context
     ): ApiResponse<Unit> {
-        val response = remoteDataSource.logout(refresh, context)
-
-        localDataSource.deleteUser()
-        localDataSource.deleteAllCaption()
-        localDataSource.logout()
-        return response
+        wrapEspressoIdlingResource {
+            val response = remoteDataSource.logout(refresh, context)
+            localDataSource.deleteUser()
+            localDataSource.deleteAllCaption()
+            localDataSource.logout()
+            return response
+        }
     }
 
     override suspend fun saveLanguage(language: Language) {
-        return localDataSource.saveLanguage(language)
+        wrapEspressoIdlingResource {
+            return localDataSource.saveLanguage(language)
+        }
     }
 
     override fun getLanguage(): Flow<Language> {
-        return localDataSource.getLanguage()
+        wrapEspressoIdlingResource {
+            return localDataSource.getLanguage()
+        }
     }
 
     override suspend fun login(
         googleId: String,
         context: Context
     ): ApiResponse<LoginResponse> {
-        val response = remoteDataSource.googleLogin(googleId)
-        if (response.status && response.data != null) {
-            localDataSource.saveSession(
-                SessionData(
-                    refreshToken = response.data.refresh!!,
-                    token = response.data.access,
+        wrapEspressoIdlingResource {
+            val response = remoteDataSource.googleLogin(googleId)
+            if (response.status && response.data != null) {
+                localDataSource.saveSession(
+                    SessionData(
+                        refreshToken = response.data.refresh!!,
+                        token = response.data.access,
+                    )
                 )
-            )
+            }
+            return response
         }
-        return response
     }
 
-    override fun isConnected(): Flow<Boolean> = remoteDataSource.isConnected()
+    override fun isConnected(): Flow<Boolean> {
+        wrapEspressoIdlingResource {
+            return remoteDataSource.isConnected()
+        }
+    }
 
     override suspend fun getAllCaptions(
         isConnected: Boolean,
         token: String,
         context: Context
     ): Flow<List<CaptionEntity>> = flow {
-        var currentCaption = localDataSource.getAllCaption().first()
-        if (isConnected) {
-            try {
-                val apiResponse = remoteDataSource.getCaptionList(token, context)
-                if (apiResponse.status) {
-                    val captionsFromServer = apiResponse.data
-                    try {
-                        val entities = mutableListOf<CaptionEntity>()
-                        captionsFromServer?.forEach { serverCaption ->
-                            try {
-                                val imageFile = withContext(Dispatchers.IO) {
-                                    ImageConverter.downloadImageToFile(context, serverCaption.image)
-                                        ?.resizeIfTooLarge()
-                                        ?.reduceFileSize()
-                                }
-                                if (imageFile != null) {
-                                    entities.add(
-                                        CaptionEntity(
-                                            id = serverCaption.id,
-                                            caption = serverCaption.caption,
-                                            author = null,
-                                            date = null,
-                                            location = null,
-                                            device = null,
-                                            model = null,
-                                            image = imageFile.absolutePath,
-                                        )
-                                    )
-                                }
-                            } catch (_: Exception) {
-                            }
-                        }
-                        currentCaption = entities
-
-                    } catch (e: Exception) {
-                        // Keep currentCaption as is (local data)
-                    }
-                }
-            } catch (e: Exception) {
-                // Keep currentCaption as is (local data)
-            }
-            val localCaptionBeforeProcessing = localDataSource.getAllCaption().first()
-            if (currentCaption != localCaptionBeforeProcessing) {
+        wrapEspressoIdlingResource {
+            var currentCaption = localDataSource.getAllCaption().first()
+            Log.d("Repository-GetAllCaption", "isConected : $isConnected")
+            if (isConnected) {
                 try {
-                    localDataSource.deleteAllCaption()
-                    localDataSource.insertCaption(currentCaption)
-                    emit(localDataSource.getAllCaption().first())
+                    val apiResponse = remoteDataSource.getCaptionList(token, context)
+                    if (apiResponse.status) {
+                        val captionsFromServer = apiResponse.data
+                        Log.d("Repository-GetCaptionList", captionsFromServer.toString())
+                        try {
+                            val entities = mutableListOf<CaptionEntity>()
+                            captionsFromServer?.forEach { serverCaption ->
+                                try {
+                                    val imageFile = withContext(Dispatchers.IO) {
+                                        ImageConverter.downloadImageToFile(
+                                            context,
+                                            serverCaption.image
+                                        )
+                                            ?.resizeIfTooLarge()
+                                            ?.reduceFileSize()
+                                    }
+                                    if (imageFile != null) {
+                                        entities.add(
+                                            CaptionEntity(
+                                                id = serverCaption.id,
+                                                caption = serverCaption.caption,
+                                                author = null,
+                                                date = null,
+                                                location = null,
+                                                device = null,
+                                                model = null,
+                                                image = imageFile.absolutePath,
+                                            )
+                                        )
+                                    }
+                                } catch (_: Exception) {
+                                }
+                            }
+                            currentCaption = entities
+
+                        } catch (e: Exception) {
+                            // Keep currentCaption as is (local data)
+                        }
+                    }
                 } catch (e: Exception) {
+                    // Keep currentCaption as is (local data)
+                }
+                val localCaptionBeforeProcessing = localDataSource.getAllCaption().first()
+                if (currentCaption != localCaptionBeforeProcessing) {
+                    try {
+                        localDataSource.deleteAllCaption()
+                        localDataSource.insertCaption(currentCaption)
+                        emit(localDataSource.getAllCaption().first())
+                    } catch (e: Exception) {
+                        emit(currentCaption)
+                    }
+                } else {
                     emit(currentCaption)
                 }
             } else {
                 emit(currentCaption)
             }
-        } else {
-            emit(currentCaption)
         }
     }.distinctUntilChanged()
 
@@ -185,43 +208,46 @@ class DescripixRepository @Inject constructor(
         token: String,
         context: Context
     ): Flow<UserEntity> = flow {
-        val localUser = localDataSource.getUser(refreshToken).first()
-        if (isConnected) {
-            val response = remoteDataSource.getUserDetail(token, context)
-            val onlineUser = response.data
+        wrapEspressoIdlingResource {
+            val localUser = localDataSource.getUser(refreshToken).first()
+            if (isConnected) {
+                val response = remoteDataSource.getUserDetail(token, context)
+                val onlineUser = response.data
 
-            if (response.status && onlineUser != null) {
+                if (response.status && onlineUser != null) {
 
-                if (localUser != null) localDataSource.deleteUser()
-                val userEntity = UserEntity(
-                    id = refreshToken,
-                    username = response.data.username,
-                    email = response.data.email,
-                    gender = response.data.gender,
-                    birthDate = response.data.birthDate,
-                    aboutMe = response.data.aboutMe,
-                    profileImg = response.data.profileImg,
-                )
-                localDataSource.insertUser(
-                    userEntity
-                )
-                if (localUser != userEntity)
-                    emit(userEntity)
+                    if (localUser != null) localDataSource.deleteUser()
+                    val userEntity = UserEntity(
+                        id = refreshToken,
+                        username = response.data.username,
+                        email = response.data.email,
+                        gender = response.data.gender,
+                        birthDate = response.data.birthDate,
+                        aboutMe = response.data.aboutMe,
+                        profileImg = response.data.profileImg,
+                    )
+                    localDataSource.insertUser(
+                        userEntity
+                    )
+                    if (localUser != userEntity)
+                        emit(userEntity)
+                }
+            }
+            val newLocalUser = localDataSource.getUser(refreshToken).first()
+            if (newLocalUser != null) {
+                emit(newLocalUser)
             }
         }
-        val newLocalUser = localDataSource.getUser(refreshToken).first()
-        if (newLocalUser != null) {
-            emit(newLocalUser)
-        }
     }
-
 
     override suspend fun updateUserDetail(
         userRequest: UserRequest,
         token: String,
         context: Context
     ): ApiResponse<Unit> {
-        return remoteDataSource.updateUserDetail(userRequest, token, context)
+        wrapEspressoIdlingResource {
+            return remoteDataSource.updateUserDetail(userRequest, token, context)
+        }
     }
 
     //Remote Caption
@@ -229,41 +255,56 @@ class DescripixRepository @Inject constructor(
         captionRequest: CaptionRequest,
         token: String,
         context: Context
-    ): ApiResponse<CaptionDataResponse> =
-        remoteDataSource.saveCaption(captionRequest, token, context)
+    ): ApiResponse<CaptionDataResponse> {
+        wrapEspressoIdlingResource {
+            return remoteDataSource.saveCaption(captionRequest, token, context)
+        }
+    }
 
     override suspend fun deleteCaption(
         id: Int,
         token: String,
         context: Context
-    ): ApiResponse<Unit> =
-        remoteDataSource.deleteCaption(id, token, context)
+    ): ApiResponse<Unit> {
+        wrapEspressoIdlingResource {
+            return remoteDataSource.deleteCaption(id, token, context)
+        }
+    }
 
     override suspend fun editCaption(
         id: Int,
         captionRequest: CaptionRequest,
         token: String,
         context: Context
-    ): ApiResponse<Unit> =
-        remoteDataSource.editCaption(id, captionRequest, token, context)
+    ): ApiResponse<Unit> {
+        wrapEspressoIdlingResource {
+            return remoteDataSource.editCaption(id, captionRequest, token, context)
+        }
+    }
 
     override suspend fun generateCaption(
+        languageCode: String,
         metadata: JSONObject,
         image: Uri,
         context: Context
-    ) =
-        remoteDataSource.generateCaption(metadata, image, context)
+    ): ApiResponse<GenerateResponse> {
+        wrapEspressoIdlingResource {
+            return remoteDataSource.generateCaption(languageCode, metadata, image, context)
+        }
+    }
 
     override suspend fun getCaptionDetails(
         id: Int,
         token: String,
         context: Context
     ): ApiResponse<CaptionDataResponse> {
-        val response = remoteDataSource.getCaptionDetails(id, token, context)
-        var finalResponse = response
-        if (response.status && response.data?.date == null) {
-            finalResponse = response.copy(data = response.data?.copy(date = ""))
+        wrapEspressoIdlingResource {
+            val response = remoteDataSource.getCaptionDetails(id, token, context)
+            var finalResponse = response
+            if (response.status && response.data?.date == null) {
+                finalResponse = response.copy(data = response.data?.copy(date = ""))
+            }
+            return finalResponse
         }
-        return finalResponse
     }
 }

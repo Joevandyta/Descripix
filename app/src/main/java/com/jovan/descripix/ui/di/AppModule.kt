@@ -2,8 +2,8 @@ package com.jovan.descripix.ui.di
 
 import com.jovan.descripix.domain.usecase.DescripixInteractor
 import com.jovan.descripix.domain.usecase.DescripixUseCase
-import com.jovan.descripix.utils.credential.CredentialService
-import com.jovan.descripix.utils.credential.ICredentialService
+import com.jovan.descripix.utils.credential.ServiceImpl
+import com.jovan.descripix.utils.credential.IService
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -20,5 +20,5 @@ abstract class AppModule {
 
     @Binds
     @ViewModelScoped
-    abstract fun bindCredentialService(credentialService: CredentialService): ICredentialService
+    abstract fun bindCredentialService(credentialService: ServiceImpl): IService
 }

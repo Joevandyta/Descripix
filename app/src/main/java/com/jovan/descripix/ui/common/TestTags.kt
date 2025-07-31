@@ -6,4 +6,6 @@ object TestTags {
     const val GUEST_SCREEN = "GUEST_SCREEN"
     const val AUTHENTICATED_SCREEN = "AUTHENTICATED_SCREEN"
     const val SIGN_IN_BUTTON = "SIGN_IN_BUTTON"
+    const val DETAILS_SCREEN = "DETAILS_SCREEN"
+    const val CAPTION_TEXT_LAYOUT = "CAPTION_TEXT_LAYOUT"
 }

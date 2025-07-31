@@ -1,6 +1,8 @@
 package com.jovan.descripix.utils.credential
 
+import android.content.ContentResolver
 import android.content.Context
+import android.net.Uri
 import android.util.Log
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
@@ -10,10 +12,11 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.jovan.descripix.R
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
+import androidx.core.net.toUri
 
-class CredentialService @Inject constructor(
+class ServiceImpl @Inject constructor(
     @ApplicationContext private val context: Context
-) : ICredentialService {
+) : IService {
     override suspend fun getGoogleIdToken(context: Context): String {
         Log.d("CredManProvService", "Login Try")
         val credentialManager = CredentialManager.create(context)
@@ -36,5 +39,20 @@ class CredentialService @Inject constructor(
         } else {
             throw IllegalStateException("Unexpected credential type")
         }
+    }
+
+    override var isTestMode: Boolean
+        get() = false
+        set(value) {}
+
+    override fun testImagedUrl(): Uri {
+
+        val res = context.resources
+
+        val uri = (ContentResolver.SCHEME_ANDROID_RESOURCE + "://" +
+                res.getResourcePackageName(R.drawable.image_dummy) + "/" +
+                res.getResourceTypeName(R.drawable.image_dummy) + "/" +
+                res.getResourceEntryName(R.drawable.image_dummy)).toUri()
+        return uri
     }
 }

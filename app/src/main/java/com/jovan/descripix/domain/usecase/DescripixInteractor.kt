@@ -58,8 +58,8 @@ class DescripixInteractor @Inject constructor(private val repository: IDescripix
     override suspend fun editCaption(id: Int, captionRequest: CaptionRequest, token: String, context: Context): ApiResponse<Unit> =
         repository.editCaption(id, captionRequest, token, context)
 
-    override suspend fun generateCaption(metadata: JSONObject, image: Uri, context: Context) =
-        repository.generateCaption(metadata, image, context)
+    override suspend fun generateCaption(languageCode: String, metadata: JSONObject, image: Uri, context: Context) =
+        repository.generateCaption(languageCode, metadata, image, context)
 
     override suspend fun getCaptionDetails(id: Int, token: String, context: Context) : ApiResponse<CaptionDataResponse> =
         repository.getCaptionDetails(id, token, context)

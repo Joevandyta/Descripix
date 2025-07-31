@@ -143,6 +143,7 @@ dependencies {
     testImplementation(libs.mockk)
 
     //Integration test
+    implementation(libs.androidx.espresso.idling.resource)
     implementation(libs.androidx.navigation.testing.android)
     androidTestImplementation(libs.junit)
     androidTestImplementation(libs.hilt.android.testing)

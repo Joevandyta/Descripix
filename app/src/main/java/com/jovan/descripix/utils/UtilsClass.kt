@@ -54,20 +54,10 @@ suspend fun <T> handleApiException(
     }
 }
 
-//fun isConnected(context: Context): Boolean {
-//    val connectivityManager =
-//        context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-//
-//    val network = connectivityManager.activeNetwork ?: return false
-//    val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
-//    return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-//}
-
 fun dateFormater(date: Date): String {
     val formatter = SimpleDateFormat("dd-MM-yyyy, HH:mm", Locale.getDefault())
     return formatter.format(date)
 }
-
 
 fun File.reduceFileSize(): File {
     val file = this

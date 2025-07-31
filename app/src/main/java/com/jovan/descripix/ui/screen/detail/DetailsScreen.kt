@@ -1,5 +1,6 @@
 package com.jovan.descripix.ui.screen.detail
 
+import android.content.ClipData
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutLinearInEasing
@@ -60,9 +61,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.ClipEntry
+import androidx.compose.ui.platform.LocalClipboard
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.datasource.LoremIpsum
@@ -77,6 +83,7 @@ import com.jovan.descripix.R
 import com.jovan.descripix.data.source.local.entity.CaptionEntity
 import com.jovan.descripix.ui.common.ModalType
 import com.jovan.descripix.ui.common.SocialMediaPackage
+import com.jovan.descripix.ui.common.TestTags
 import com.jovan.descripix.ui.common.UiState
 import com.jovan.descripix.ui.component.DateTimePickerModal
 import com.jovan.descripix.ui.component.FloatingToolbar
@@ -394,6 +401,7 @@ fun DetailScreen(
             Box(
                 modifier = modifier
                     .padding(4.dp)
+                    .testTag(TestTags.DETAILS_SCREEN)
             ) {
 
                 DetailContent(
@@ -653,7 +661,7 @@ fun DetailContent(
     var scale by remember { mutableFloatStateOf(1f) }
     var offset by remember { mutableStateOf(Offset.Zero) }
     var isZoomedOut by remember { mutableStateOf(true) }
-
+    val clipboardManager = LocalClipboardManager.current
     var isCaptionLayoutVisible by remember { mutableStateOf(false) }
     LaunchedEffect(captionText) {
         if (captionText.isNotEmpty()) isCaptionLayoutVisible = true
@@ -832,7 +840,8 @@ fun DetailContent(
                     colors = CardDefaults.cardColors(MaterialTheme.colorScheme.secondaryContainer),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(8.dp),
+                        .padding(8.dp)
+                        .testTag(TestTags.CAPTION_TEXT_LAYOUT),
                 ) {
                     Row(
                         modifier = Modifier,
@@ -853,7 +862,9 @@ fun DetailContent(
                                 .weight(1f)
                         )
                         IconButton(
-                            onClick = { },
+                            onClick = {
+                                clipboardManager.setText(AnnotatedString(captionText))
+                            },
                             modifier = Modifier
                                 .padding(0.dp)
                                 .align(Alignment.CenterVertically)

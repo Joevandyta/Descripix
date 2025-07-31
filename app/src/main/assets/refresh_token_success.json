@@ -1,0 +1,7 @@
+{
+  "status": true,
+  "message": "Token refreshed successfully",
+  "data": {
+    "access": "new_access_token"
+  }
+}

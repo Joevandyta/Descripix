@@ -2,15 +2,8 @@ package com.jovan.descripix.ui.screen.home
 
 import android.content.Context
 import android.util.Log
-import androidx.credentials.CredentialManager
-import androidx.credentials.CustomCredential
-import androidx.credentials.GetCredentialRequest
-import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.android.libraries.identity.googleid.GetGoogleIdOption
-import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
-import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import com.jovan.descripix.R
 import com.jovan.descripix.data.source.local.datastore.SessionData
 import com.jovan.descripix.data.source.local.entity.CaptionEntity
@@ -19,8 +12,7 @@ import com.jovan.descripix.data.source.remote.response.CaptionDataResponse
 import com.jovan.descripix.data.source.remote.response.LoginResponse
 import com.jovan.descripix.domain.usecase.DescripixUseCase
 import com.jovan.descripix.ui.common.UiState
-import com.jovan.descripix.utils.credential.CredentialService
-import com.jovan.descripix.utils.credential.ICredentialService
+import com.jovan.descripix.utils.credential.IService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -33,7 +25,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val credentialService: ICredentialService,
+    private val credentialService: IService,
     private val descripixUseCase: DescripixUseCase
 ) :
     ViewModel() {

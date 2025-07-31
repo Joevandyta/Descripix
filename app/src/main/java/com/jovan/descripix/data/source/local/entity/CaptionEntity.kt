@@ -15,15 +15,15 @@ data class CaptionEntity(
     @ColumnInfo(name = "caption")
     val caption: String?,
     @ColumnInfo(name = "author")
-    val author: String?,
+    val author: String? = null,
     @ColumnInfo(name = "date")
-    val date: String?,
+    val date: String? = null,
     @ColumnInfo(name = "location")
-    val location: String?,
+    val location: String? = null,
     @ColumnInfo(name = "device")
-    val device: String?,
+    val device: String? = null,
     @ColumnInfo(name = "model")
-    val model: String?,
+    val model: String? = null,
     @ColumnInfo(name = "image")
     val image: String,
 

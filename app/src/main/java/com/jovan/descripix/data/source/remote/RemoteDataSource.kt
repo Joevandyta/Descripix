@@ -216,10 +216,12 @@ class RemoteDataSource @Inject constructor(
         handleApiException { apiService.getCaptionDetails(id, token = context.getString(R.string.bearer, token)) }
 
     override suspend fun generateCaption(
+        languageCode: String,
         metadata: JSONObject,
         image: Uri,
         context: Context
     ): ApiResponse<GenerateResponse> {
+
         val metadataBody =
             metadata.toString().toRequestBody("application/json".toMediaTypeOrNull())
         try {
@@ -235,8 +237,10 @@ class RemoteDataSource @Inject constructor(
             )
             return handleApiException {
                 apiService.generateCaption(
-                    metadataBody,
-                    multipartBody
+                    languageCode = languageCode.toRequestBody(),
+                    metadata = metadataBody,
+                    image = multipartBody,
+
                 )
             }
         } catch (e: Exception) {
@@ -253,8 +257,9 @@ class RemoteDataSource @Inject constructor(
                 )
                 return handleApiException {
                     apiService.generateCaption(
-                        metadataBody,
-                        multipartBody
+                        languageCode = languageCode.toRequestBody(),
+                        metadata = metadataBody,
+                        image = multipartBody
                     )
                 }
             }
