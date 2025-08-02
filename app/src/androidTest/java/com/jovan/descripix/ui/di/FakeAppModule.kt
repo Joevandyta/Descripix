@@ -2,9 +2,8 @@ package com.jovan.descripix.ui.di
 
 import com.jovan.descripix.domain.usecase.DescripixInteractor
 import com.jovan.descripix.domain.usecase.DescripixUseCase
-import com.jovan.descripix.utils.credential.CredentialService
-import com.jovan.descripix.utils.credential.FakeCredentialService
-import com.jovan.descripix.utils.credential.ICredentialService
+import com.jovan.descripix.utils.credential.FakeService
+import com.jovan.descripix.utils.credential.IService
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.android.components.ViewModelComponent
@@ -24,5 +23,5 @@ abstract class FakeAppModule {
 
     @Binds
     @ViewModelScoped
-    abstract fun bindCredentialService(credentialService: FakeCredentialService): ICredentialService
+    abstract fun bindCredentialService(credentialService: FakeService): IService
 }

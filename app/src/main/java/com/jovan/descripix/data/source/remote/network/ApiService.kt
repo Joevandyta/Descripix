@@ -108,6 +108,7 @@ interface ApiService {
     @POST("caption/generate/")
     suspend fun generateCaption(
         @Part("metadata") metadata: RequestBody,
+        @Part("language_code") languageCode: RequestBody,
         @Part image: MultipartBody.Part,
     ): ApiResponse<GenerateResponse>
 

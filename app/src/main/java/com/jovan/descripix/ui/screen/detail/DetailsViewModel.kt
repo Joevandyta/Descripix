@@ -1,24 +1,18 @@
 package com.jovan.descripix.ui.screen.detail
 
 import android.content.Context
+import android.content.Intent
 import android.location.Address
 import android.location.Geocoder
 import android.net.Uri
 import android.os.Build
 import android.util.Log
-import androidx.credentials.CredentialManager
-import androidx.credentials.CustomCredential
-import androidx.credentials.GetCredentialRequest
-import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.drew.imaging.ImageMetadataReader
 import com.drew.metadata.exif.ExifIFD0Directory
 import com.drew.metadata.exif.ExifSubIFDDirectory
 import com.drew.metadata.exif.GpsDirectory
-import com.google.android.libraries.identity.googleid.GetGoogleIdOption
-import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
-import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import com.jovan.descripix.R
 import com.jovan.descripix.data.source.local.datastore.SessionData
 import com.jovan.descripix.data.source.local.entity.CaptionEntity
@@ -28,15 +22,20 @@ import com.jovan.descripix.data.source.remote.response.CaptionDataResponse
 import com.jovan.descripix.data.source.remote.response.GenerateResponse
 import com.jovan.descripix.data.source.remote.response.LoginResponse
 import com.jovan.descripix.domain.usecase.DescripixUseCase
+import com.jovan.descripix.ui.common.Language
 import com.jovan.descripix.ui.common.UiState
+import com.jovan.descripix.utils.credential.IService
 import com.jovan.descripix.utils.dateFormater
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -48,6 +47,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class DetailsViewModel @Inject constructor(
+    private val service: IService,
     private val descripixUseCase: DescripixUseCase,
 ) : ViewModel() {
 
@@ -81,9 +81,28 @@ class DetailsViewModel @Inject constructor(
     }
 
 
+
+    private val _openImagePicker = MutableSharedFlow<Unit>()
+    val openImagePicker = _openImagePicker.asSharedFlow()
+
+    fun requestPickImage(context: Context) {
+        viewModelScope.launch {
+            Log.d("DetailsViewModel", "isTestMode: ${service.isTestMode}")
+            if (service.isTestMode) {
+                // Kalau test mode → langsung kirim mock URI
+                Log.d("DetailsViewModel", "Fake Run")
+                val fakeUri = service.testImagedUrl()
+                extractImageMetadata(context, fakeUri)
+            } else {
+                // Kalau normal → suruh UI buka picker
+                Log.d("DetailsViewModel", "Normal Run")
+                _openImagePicker.emit(Unit)
+            }
+        }
+    }
+
     private val _captionEntity = MutableStateFlow<CaptionEntity?>(null)
     val captionEntityState = _captionEntity.asStateFlow()
-
 
     fun extractImageMetadata(context: Context, uri: Uri) {
         viewModelScope.launch {
@@ -182,54 +201,17 @@ class DetailsViewModel @Inject constructor(
 
     fun login(context: Context) {
         _loginState.value = UiState.Loading
-
+        Log.d("HomeViewModel - login", "Run")
         viewModelScope.launch {
-            val result = runCatching {
-                val credentialManager = CredentialManager.create(context)
-                val googleIdOption = GetGoogleIdOption.Builder()
-                    .setFilterByAuthorizedAccounts(false)
-                    .setServerClientId(context.getString(R.string.client_id))
-                    .build()
-                val request = GetCredentialRequest.Builder()
-                    .addCredentialOption(googleIdOption)
-                    .build()
-                credentialManager.getCredential(request = request, context = context)
+            try {
+                val idToken = service.getGoogleIdToken(context)
+                val loginResult = descripixUseCase.login(idToken, context)
+                _loginState.value = UiState.Success(loginResult)
+                Log.d("HomeViewModel - login", "Success")
 
-            }.onFailure { e ->
-                val msg = when (e) {
-                    is GetCredentialCancellationException -> context.getString(R.string.login_canceled_by_user)
-                    else -> e.message ?: context.getString(R.string.unknown_error)
-                }
-                _loginState.value = UiState.Error(msg)
-                return@launch
-            }.getOrNull()
-
-            result?.let {
-                when (val credential = result.credential) {
-                    is CustomCredential -> {
-                        if (credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
-                            try {
-                                val googleIdTokenCredential =
-                                    GoogleIdTokenCredential.createFrom(credential.data)
-                                val idToken = googleIdTokenCredential.idToken
-
-                                val loginResult = descripixUseCase.login(idToken, context)
-                                _loginState.value = UiState.Success(loginResult)
-
-                            } catch (e: GoogleIdTokenParsingException) {
-                                _loginState.value = UiState.Error(context.getString(R.string.google_id_is_not_valid))
-                            }
-                        } else {
-                            _loginState.value =
-                                UiState.Error(context.getString(R.string.unexpected_type_of_credential))
-                        }
-                    }
-
-                    else -> {
-                        _loginState.value =
-                            UiState.Error(context.getString(R.string.unexpected_type_of_credential))
-                    }
-                }
+            } catch (e: Exception) {
+                _loginState.value = UiState.Error(e.message ?: "Unknown error")
+                Log.e("HomeViewModel - login", "Error")
             }
         }
     }
@@ -250,6 +232,7 @@ class DetailsViewModel @Inject constructor(
     ) {
         _generatedCaption.value = UiState.Loading
         viewModelScope.launch {
+            val languageCode = descripixUseCase.getLanguage().first().code
             try {
                 val metadata = createMetadataJson(
                     author = author,
@@ -260,7 +243,7 @@ class DetailsViewModel @Inject constructor(
                     context = context
                 )
 
-                val result = descripixUseCase.generateCaption(metadata, image, context)
+                val result = descripixUseCase.generateCaption(languageCode, metadata, image, context)
                 _generatedCaption.value = UiState.Success(result)
 
             } catch (e: Exception) {
@@ -301,7 +284,6 @@ class DetailsViewModel @Inject constructor(
 
         return jsonObject
     }
-
 
     private val _deleteCaption: MutableStateFlow<UiState<ApiResponse<Unit>>> =
         MutableStateFlow(UiState.Error("Not Started"))
@@ -374,9 +356,7 @@ class DetailsViewModel @Inject constructor(
                 _editCaption.value = UiState.Error(e.message ?: context.getString(R.string.unknown_error))
             }
         }
-
     }
-
 
     fun resetAllStates(){
         _sessionState.value = UiState.Loading

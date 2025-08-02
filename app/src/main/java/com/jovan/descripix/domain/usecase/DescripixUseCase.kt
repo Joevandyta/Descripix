@@ -40,7 +40,7 @@ interface DescripixUseCase {
 
     suspend fun editCaption(id: Int, captionRequest: CaptionRequest, token: String, context: Context): ApiResponse<Unit>
 
-    suspend fun generateCaption(metadata: JSONObject, image: Uri, context: Context) : ApiResponse<GenerateResponse>
+    suspend fun generateCaption(languageCode: String, metadata: JSONObject, image: Uri, context: Context) : ApiResponse<GenerateResponse>
 
     suspend fun getCaptionDetails(id: Int, token: String, context: Context) : ApiResponse<CaptionDataResponse>
 

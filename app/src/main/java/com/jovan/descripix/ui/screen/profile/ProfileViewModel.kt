@@ -6,15 +6,8 @@ import android.os.Build
 import android.os.LocaleList
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
-import androidx.credentials.CredentialManager
-import androidx.credentials.CustomCredential
-import androidx.credentials.GetCredentialRequest
-import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.android.libraries.identity.googleid.GetGoogleIdOption
-import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
-import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import com.jovan.descripix.R
 import com.jovan.descripix.data.source.local.datastore.SessionData
 import com.jovan.descripix.data.source.local.entity.UserEntity
@@ -25,6 +18,7 @@ import com.jovan.descripix.domain.usecase.DescripixUseCase
 import com.jovan.descripix.ui.common.Language
 import com.jovan.descripix.ui.common.UiState
 import com.jovan.descripix.utils.convertBirthDate
+import com.jovan.descripix.utils.credential.IService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -35,7 +29,10 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class ProfileViewModel @Inject constructor(private val descripixUseCase: DescripixUseCase) :
+class ProfileViewModel @Inject constructor(
+    private val credentialService: IService,
+    private val descripixUseCase: DescripixUseCase
+) :
     ViewModel() {
 
     val isConnected = descripixUseCase
@@ -73,58 +70,17 @@ class ProfileViewModel @Inject constructor(private val descripixUseCase: Descrip
 
     fun login(context: Context) {
         _loginState.value = UiState.Loading
-
         viewModelScope.launch {
-            val result = runCatching {
-                val credentialManager = CredentialManager.create(context)
-                val googleIdOption = GetGoogleIdOption.Builder()
-                    .setFilterByAuthorizedAccounts(false)
-                    .setServerClientId(context.getString(R.string.client_id))
-                    .build()
-                val request = GetCredentialRequest.Builder()
-                    .addCredentialOption(googleIdOption)
-                    .build()
-                credentialManager.getCredential(request = request, context = context)
+            try {
+                val idToken = credentialService.getGoogleIdToken(context)
+                val loginResult = descripixUseCase.login(idToken, context)
+                _loginState.value = UiState.Success(loginResult)
 
-            }.onFailure { e ->
-                val msg = when (e) {
-                    is GetCredentialCancellationException -> context.getString(R.string.login_canceled_by_user)
-                    else -> e.message ?: context.getString(R.string.unknown_error)
-                }
-                _loginState.value = UiState.Error(msg)
-                return@launch
-            }.getOrNull()
-
-            result?.let {
-                when (val credential = result.credential) {
-                    is CustomCredential -> {
-                        if (credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
-                            try {
-                                val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
-
-                                val idToken = googleIdTokenCredential.idToken
-
-                                val loginResult = descripixUseCase.login(idToken, context)
-                                _loginState.value = UiState.Success(loginResult)
-
-                            } catch (e: GoogleIdTokenParsingException) {
-                                _loginState.value = UiState.Error(context.getString(R.string.google_id_is_not_valid))
-                            }
-                        } else {
-                            _loginState.value =
-                                UiState.Error(context.getString(R.string.unexpected_type_of_credential))
-                        }
-                    }
-
-                    else -> {
-                        _loginState.value =
-                            UiState.Error(context.getString(R.string.unexpected_type_of_credential))
-                    }
-                }
+            } catch (e: Exception) {
+                _loginState.value = UiState.Error(e.message ?: "Unknown error")
             }
         }
     }
-
 
     private val _logoutState: MutableStateFlow<UiState<ApiResponse<Unit>>> =
         MutableStateFlow(UiState.Error("Not Started"))

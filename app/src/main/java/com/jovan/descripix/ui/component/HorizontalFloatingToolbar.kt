@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.jovan.descripix.R
@@ -75,15 +76,15 @@ fun FloatingToolbar(
                                         R.drawable.ic_bookmark
                                     }
                                 ),
-                                contentDescription = "Save Caption",
-
+                                contentDescription = stringResource(R.string.save_caption),
                                 )
                             Text(
-                                text = if (toogleSaveActive) "Saved" else "Save",
+                                text = if (toogleSaveActive) stringResource(R.string.saved) else stringResource(
+                                    R.string.save
+                                ),
                                 color = if(isToogleSaveEnabled) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.4f)
                             )
                         }
-
                     }
                 } else {
                     TextButton(
@@ -97,21 +98,18 @@ fun FloatingToolbar(
                             Icon(
                                 tint = MaterialTheme.colorScheme.onSecondaryContainer,
                                 painter = painterResource(R.drawable.ic_login),
-                                contentDescription = "Login Button",
-
+                                contentDescription = stringResource(R.string.sign_in_button),
                                 )
                             Text(
-                                text = "Login",
+                                text = stringResource(R.string.sign_in),
                                 color = MaterialTheme.colorScheme.onSecondaryContainer
                             )
                         }
-
                     }
                 }
                 TextButton(
                     onClick = onGenerateClicked,
                     enabled = isGenerateButtonActive,
-
                     ) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -120,10 +118,10 @@ fun FloatingToolbar(
                         Icon(
                             tint = if(isGenerateButtonActive) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.4f),
                             painter = painterResource(R.drawable.ic_rocket),
-                            contentDescription = "Save Caption"
+                            contentDescription = stringResource(R.string.generate_caption)
                         )
                         Text(
-                            text = "Generate",
+                            text = stringResource(R.string.generate),
                             color = if(isGenerateButtonActive) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.4f)
                         )
                     }

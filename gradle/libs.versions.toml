@@ -42,6 +42,7 @@ runner = "1.6.2"
 mockwebserver = "4.9.1"
 kotlinxCoroutinesTest = "1.5.1"
 navigationTestingAndroid = "2.9.2"
+espressoIdlingResource = "3.4.0"
 [libraries]
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 androidx-constraintlayout-compose = { module = "androidx.constraintlayout:constraintlayout-compose", version.ref = "constraintlayoutCompose" }
@@ -94,6 +95,7 @@ truth = { module = "com.google.truth:truth", version.ref = "truth" }
 androidx-navigation-testing-android = { group = "androidx.navigation", name = "navigation-testing-android", version.ref = "navigationTestingAndroid" }
 hilt-android-testing = { module = "com.google.dagger:hilt-android-testing", version.ref = "hilt" }
 androidx-runner = { module = "androidx.test:runner", version.ref = "runner" }
+androidx-espresso-idling-resource = { module = "androidx.test.espresso:espresso-idling-resource", version.ref = "espressoIdlingResource" }
 
 
 

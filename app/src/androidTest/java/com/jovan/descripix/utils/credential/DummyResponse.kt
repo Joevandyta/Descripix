@@ -12,7 +12,8 @@ object DummyResponse {
                 // 1. Google Login
                 request.path == "/auth/google-login/" && request.method == "POST" ->
                     MockResponse().setResponseCode(200)
-                        .setBody(JsonConverter.readStringFromFile("success_login_response.json"))
+                        .setBody(JsonConverter.readStringFromFile("login_success.json"))
+
 
                 // 2. Logout
                 request.path == "/auth/logout/" && request.method == "POST" ->
@@ -22,12 +23,12 @@ object DummyResponse {
                 // 3. Refresh Token
                 request.path == "/auth/token-refresh/" && request.method == "POST" ->
                     MockResponse().setResponseCode(200)
-                        .setBody(JsonConverter.readStringFromFile("refresh_token_response.json"))
+                        .setBody(JsonConverter.readStringFromFile("login_success.json"))
 
                 // 4. Verify Token
                 request.path == "/auth/token-verify/" && request.method == "GET" ->
                     MockResponse().setResponseCode(200)
-                        .setBody(JsonConverter.readStringFromFile("caption_detail_response.json"))
+                        .setBody(JsonConverter.readStringFromFile("task_success_emptybody.json.json"))
 
                 // 5. User Detail
                 request.path == "/auth/user-detail/" && request.method == "GET" ->
@@ -67,8 +68,7 @@ object DummyResponse {
                 // 12. Caption List
                 request.path == "/caption/list/" && request.method == "GET" ->
                     MockResponse().setResponseCode(200)
-                        .setBody(JsonConverter.readStringFromFile("caption_list_response.json"))
-
+                        .setBody(JsonConverter.readStringFromFile("caption_list_success.json"))
                 else -> MockResponse().setResponseCode(404)
             }
         }

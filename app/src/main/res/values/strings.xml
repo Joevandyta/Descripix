@@ -75,5 +75,9 @@
     <string name="image_metadata">Image Metadata</string>
     <string name="location">Location</string>
     <string name="device">Device</string>
+    <string name="saved">Saved</string>
+    <string name="save">Save</string>
+    <string name="save_caption">Save Caption</string>
+    <string name="generate_caption">Generate Caption</string>
 
 </resources>

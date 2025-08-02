@@ -1,0 +1,15 @@
+{
+  "status": true,
+  "message": "Caption retrieved successfully",
+  "data": {
+    "id": 1,
+    "caption": "online caption 1",
+    "author": "",
+    "date": "",
+    "location": "",
+    "device": "",
+    "model": "",
+    "image": "https://smaller-pictures.appspot.com/images/dreamstime_xxl_65780868_small.jpg",
+    "uid": "5"
+  }
+}

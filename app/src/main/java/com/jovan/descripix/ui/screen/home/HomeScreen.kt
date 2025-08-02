@@ -1,5 +1,6 @@
 package com.jovan.descripix.ui.screen.home
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -93,13 +94,11 @@ fun HomeScreen(
                 }
 
                 AutenticatedScreen(
-                    modifier = modifier.testTag(TestTags.AUTHENTICATED_SCREEN),
                     navigateToDetail = navigateToDetail
                 )
             } else {
                 GuestScreen(
-                    modifier = modifier
-                        .testTag(TestTags.GUEST_SCREEN),
+                    modifier = modifier,
                     onLoginClicked = {
                         viewModel.login(context)
                     }
@@ -131,7 +130,8 @@ fun GuestScreen(
         ),
         exit = fadeOut()
     ) {
-        ConstraintLayout(modifier = modifier) {
+        ConstraintLayout(modifier = modifier
+            .testTag(TestTags.GUEST_SCREEN)) {
             val (header, buttonLayout, textHeader, image) = createRefs()
             val arcColor = MaterialTheme.colorScheme.primaryContainer
             ConstraintLayout(
@@ -265,10 +265,12 @@ fun AutenticatedScreen(
     val context = LocalContext.current
     val captionListState by viewModel.captionListState.collectAsStateWithLifecycle()
     val captionDetailState by viewModel.captionDetailState.collectAsStateWithLifecycle()
-    val captionItems = (captionListState as? UiState.Success)?.data.orEmpty()
     val isLoading = captionListState is UiState.Loading
 
+    val captionItems = (captionListState as? UiState.Success)?.data.orEmpty()
+
     LaunchedEffect(captionDetailState) {
+        Log.d("CaptionList", "State changed: $captionDetailState")
         when (val state = captionDetailState) {
             is UiState.Success -> {
                 val captionData = state.data.data
@@ -303,6 +305,7 @@ fun AutenticatedScreen(
         modifier = modifier
             .fillMaxSize()
             .padding(8.dp)
+            .testTag(TestTags.AUTHENTICATED_SCREEN)
     ) {
         if (!isLoading && captionItems.isEmpty()) {
             Box(
@@ -335,27 +338,28 @@ fun AutenticatedScreen(
                 }
             }
         }
-
-        LazyColumn(
-            modifier = modifier.fillMaxSize(),
-        ) {
-            if (isLoading) {
-                items(10) {
-                    ShimmerListItem()
-                }
-            } else {
-                items(
-                    items = captionItems,
-                    key = { it.id }) { item ->
-                    val imageUrl = remember(item.image) { item.image }
-                    CaptionItem(
-                        imageUrl = imageUrl,
-                        caption = item.caption.toString(),
-                        navigateToDetail = {
-                            val captionId = item.id
-                            viewModel.getCaptionDetail(captionId, context)
-                        }
-                    )
+        else{
+            LazyColumn(
+                modifier = modifier.fillMaxSize(),
+            ) {
+                if (isLoading) {
+                    items(10) {
+                        ShimmerListItem()
+                    }
+                } else {
+                    items(
+                        items = captionItems,
+                        key = { it.id }) { item ->
+                        val imageUrl = remember(item.image) { item.image }
+                        CaptionItem(
+                            imageUrl = imageUrl,
+                            caption = item.caption.toString(),
+                            navigateToDetail = {
+                                val captionId = item.id
+                                viewModel.getCaptionDetail(captionId, context)
+                            }
+                        )
+                    }
                 }
             }
         }
