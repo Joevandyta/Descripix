@@ -34,4 +34,27 @@ object FakeObject {
         )
     )
 
+    val savedCaptionEntity = CaptionEntity(
+        id = 1,
+        caption = "saved caption",
+        author = "Test Author",
+        date = "2023-10-10",
+        location = "Test Location",
+        device = "Test Device",
+        model = "Test Model",
+        image = "https://smaller-pictures.appspot.com/images/dreamstime_xxl_65780868_small.jpg"
+        ,
+    )
+
+    val uploadCaptionEntity = CaptionEntity(
+        id = -1,
+        caption = null,
+        author = "Test Author",
+        date = "",
+        location = "Test Location",
+        device = "",
+        model = "Test Model",
+        image = "https://smaller-pictures.appspot.com/images/dreamstime_xxl_65780868_small.jpg"
+        ,
+    )
 }

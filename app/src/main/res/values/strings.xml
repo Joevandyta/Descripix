@@ -79,5 +79,6 @@
     <string name="save">Save</string>
     <string name="save_caption">Save Caption</string>
     <string name="generate_caption">Generate Caption</string>
+    <string name="share">Share</string>
 
 </resources>

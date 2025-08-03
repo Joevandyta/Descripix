@@ -8,4 +8,6 @@ object TestTags {
     const val SIGN_IN_BUTTON = "SIGN_IN_BUTTON"
     const val DETAILS_SCREEN = "DETAILS_SCREEN"
     const val CAPTION_TEXT_LAYOUT = "CAPTION_TEXT_LAYOUT"
+    const val BOTTOM_BAR_ICON = "BOTTOM_BAR_ICON"
+    const val FLOATING_TOOLBAR_SAVE = "FLOATING_TOOLBAR_SAVE"
 }

@@ -4,7 +4,7 @@
     <selectionStates>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-07-27T14:42:34.045097Z">
+        <DropdownSelection timestamp="2025-07-31T15:42:49.961607400Z">
           <Target type="DEFAULT_BOOT">
             <handle>
               <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\joeva\.android\avd\Medium_Phone.avd" />
@@ -12,25 +12,16 @@
           </Target>
         </DropdownSelection>
         <DialogSelection />
-      </SelectionState>
-      <SelectionState runConfigName="GreetingPreview">
-        <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
       <SelectionState runConfigName="homeScreen()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="home_authenticatedScreen_refreshToken_isExpire_showGuestScreen()">
+      <SelectionState runConfigName="OfflineAuthenticateScreenTest">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="home_authenticatedScreen_captionListIsNotEmpty_displaysCaptions()">
+      <SelectionState runConfigName="saveCaption_shouldChangeSaveButtonState()">
         <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
-      <SelectionState runConfigName="home_authenticatedScreen_clickCaptionItem_displaysDetailCaptions()">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
-      <SelectionState runConfigName="upload()">
-        <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-07-30T14:44:01.961131300Z">
+        <DropdownSelection timestamp="2025-08-03T02:58:31.174538800Z">
           <Target type="DEFAULT_BOOT">
             <handle>
               <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\joeva\.android\avd\Medium_Phone.avd" />
@@ -39,7 +30,13 @@
         </DropdownSelection>
         <DialogSelection />
       </SelectionState>
-      <SelectionState runConfigName="home_loginFlow_shouldShowAuthenticatedScreen()">
+      <SelectionState runConfigName="updateSavedCaptionResult_shouldFetchNewData()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="DetailsScreenTest">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="AuthenticateScreenTest">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>

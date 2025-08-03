@@ -49,7 +49,6 @@ suspend fun <T> handleApiException(
         } catch (parseException: Exception) {
             e.message.toString()
         }
-
         ApiResponse(false, errorMessage, null)
     }
 }

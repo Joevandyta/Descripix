@@ -23,6 +23,7 @@ import com.jovan.descripix.data.source.local.datastore.UserPreference
 import com.jovan.descripix.data.source.local.entity.CaptionEntity
 import com.jovan.descripix.data.source.local.room.CaptionDao
 import com.jovan.descripix.ui.common.TestTags
+import com.jovan.descripix.ui.screen.detail.DetailScreen
 import com.jovan.descripix.ui.theme.DescripixTheme
 import com.jovan.descripix.utils.EspressoIdlingResource
 import com.jovan.descripix.utils.JsonConverter
@@ -56,7 +57,6 @@ class AuthenticateScreenTest {
     @get:Rule(order = 2)
     var instantTaskExecutorRule = InstantTaskExecutorRule()
 
-
     @Inject
     lateinit var userPreference: UserPreference
 
@@ -76,14 +76,6 @@ class AuthenticateScreenTest {
 
         IdlingRegistry.getInstance().register(EspressoIdlingResource.countingIdlingResource)
 
-        composeRule.setContent {
-            DescripixTheme {
-                navController = TestNavHostController(LocalContext.current)
-                navController.navigatorProvider.addNavigator(ComposeNavigator())
-                DescripixApp(navController = navController)
-            }
-        }
-
         runBlocking {
             userPreference.saveSession(
                 SessionData(
@@ -93,17 +85,25 @@ class AuthenticateScreenTest {
                 )
             )
         }
+
     }
 
     @After
     fun teardown() {
         mockWebServer.shutdown()
         IdlingRegistry.getInstance().unregister(EspressoIdlingResource.countingIdlingResource)
-
     }
 
+    private fun launchScreen(){
+        composeRule.setContent {
+            DescripixTheme {
+                navController = TestNavHostController(LocalContext.current)
+                navController.navigatorProvider.addNavigator(ComposeNavigator())
+                DescripixApp(navController = navController)
+            }
+        }
+    }
     //    Authenticate Screen
-
     @Test
     fun home_authenticatedScreen_session_isExpire_refreshToken() {
         var tokenVerifyCallCount = 0
@@ -134,9 +134,14 @@ class AuthenticateScreenTest {
             }
         }
         mockWebServer.dispatcher = dispatcher
+
         runBlocking {
             assertThat(userPreference.getSession().first().isLogin).isTrue()
         }
+
+        //Launch Screen
+        launchScreen()
+
         composeRule.onNodeWithTag(TestTags.AUTHENTICATED_SCREEN).assertExists()
         runBlocking {
             assertThat(userPreference.getSession().first().token).isEqualTo("new_access_token")
@@ -154,7 +159,7 @@ class AuthenticateScreenTest {
                             .setResponseCode(401)
                             .setBody(JsonConverter.readStringFromFile("token_verify_failed.json"))
                     }
-                    // 2. Refresh Token - success
+
                     request.path == "/auth/token-refresh/" && request.method == "POST" ->
                         MockResponse()
                             .setResponseCode(200)
@@ -165,9 +170,16 @@ class AuthenticateScreenTest {
             }
         }
         mockWebServer.dispatcher = dispatcher
+
+        //Data Before
         runBlocking {
             assertThat(userPreference.getSession().first().isLogin).isTrue()
         }
+
+        //Launch Screen
+        launchScreen()
+
+
         composeRule.onNodeWithTag(TestTags.GUEST_SCREEN).assertExists()
         runBlocking {
             assertThat(userPreference.getSession().first().isLogin).isFalse()
@@ -176,6 +188,8 @@ class AuthenticateScreenTest {
 
     @Test
     fun home_authenticatedScreen_captionListIsEmpty_showsEmptyState() {
+
+        //Its run on authenticateScreen
         val dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
                 return when {
@@ -183,38 +197,35 @@ class AuthenticateScreenTest {
                         .setResponseCode(200)
                         .setBody(JsonConverter.readStringFromFile("token_verify_success.json"))
 
+                    request.path == "/caption/list/" && request.method == "GET" ->
+                        MockResponse().setResponseCode(200)
+                            .setBody(JsonConverter.readStringFromFile("caption_list_empty.json"))
                     else -> MockResponse().setResponseCode(404)
                 }
             }
         }
         mockWebServer.dispatcher = dispatcher
+
+        //Launch Screen
+        launchScreen()
+
         val expectedText = composeRule.activity.getString(R.string.you_don_t_have_any_captions_yet)
         composeRule.onNodeWithText(expectedText).assertIsDisplayed()
     }
 
     @Test
     fun home_authenticatedScreen_captionListIsNotEmpty_displaysCaptions() {
+
         val dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
                 return when {
-                    // 4. Verify Token
-                    request.path == "/auth/token-verify/" && request.method == "GET" ->
-                        MockResponse().setResponseCode(200)
-                            .setBody(JsonConverter.readStringFromFile("token_verify_success.json"))
+                    request.path == "/auth/token-verify/" -> MockResponse()
+                        .setResponseCode(200)
+                        .setBody(JsonConverter.readStringFromFile("token_verify_success.json"))
 
-                    // 3. Refresh Token
-                    request.path == "/auth/token-refresh/" && request.method == "POST" ->
-                        MockResponse().setResponseCode(200)
-                            .setBody(JsonConverter.readStringFromFile("refresh_token_success.json"))
-
-                    // 12. Caption List
                     request.path == "/caption/list/" && request.method == "GET" ->
                         MockResponse().setResponseCode(200)
                             .setBody(JsonConverter.readStringFromFile("caption_list_success.json"))
-
-//                    request.path == "/caption/detail/?id=5" && request.method == "GET" ->
-//                        MockResponse().setResponseCode(200)
-//                            .setBody(JsonConverter.readStringFromFile("caption_detail_success.json"))
 
                     else -> MockResponse().setResponseCode(404)
                 }
@@ -230,12 +241,14 @@ class AuthenticateScreenTest {
             assertThat(currentCaption.first().caption).contains("offline")
         }
 
+        //Launch Screen
+        launchScreen()
+
         composeRule.onNodeWithTag(TestTags.AUTHENTICATED_SCREEN).assertExists()
         composeRule.onNodeWithText("online caption 1").assertExists("Caption not found")
 
         runBlocking {
             val currentCaption = captionDao.getAllCaption().first()
-
             assertThat(currentCaption.size).isEqualTo(8)
         }
     }
@@ -246,15 +259,10 @@ class AuthenticateScreenTest {
         val dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
                 return when {
-                    // 4. Verify Token
-                    request.path == "/auth/token-verify/" && request.method == "GET" ->
-                        MockResponse().setResponseCode(200)
-                            .setBody(JsonConverter.readStringFromFile("token_verify_success.json"))
-                    // 3. Refresh Token
-                    request.path == "/auth/token-refresh/" && request.method == "POST" ->
-                        MockResponse().setResponseCode(200)
-                            .setBody(JsonConverter.readStringFromFile("refresh_token_success.json"))
-                    // 12. Caption List
+                    request.path == "/auth/token-verify/" -> MockResponse()
+                        .setResponseCode(200)
+                        .setBody(JsonConverter.readStringFromFile("token_verify_success.json"))
+
                     request.path == "/caption/list/" && request.method == "GET" ->
                         MockResponse().setResponseCode(200)
                             .setBody(JsonConverter.readStringFromFile("caption_list_success.json"))
@@ -267,6 +275,9 @@ class AuthenticateScreenTest {
         }
         mockWebServer.dispatcher = dispatcher
 
+        //Launch Screen
+        launchScreen()
+
         composeRule.onNodeWithTag(TestTags.AUTHENTICATED_SCREEN).assertExists()
         composeRule.onNodeWithText("online caption 1").assertExists("Caption not found")
         composeRule.onNodeWithText("online caption 1").performClick()
@@ -275,20 +286,21 @@ class AuthenticateScreenTest {
 
     @Test
     fun uploadImage_AuthenticateMode_ShouldShowDetailScreen(){
-        val context = composeRule.activity
-
         val dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
                 return when {
-                    request.path == "/caption/generate/" && request.method == "POST" ->
+                    request.path == "/auth/token-verify/" && request.method == "GET" ->
                         MockResponse().setResponseCode(200)
-                            .setBody(JsonConverter.readStringFromFile("generate_caption_success.json"))
+                            .setBody(JsonConverter.readStringFromFile("token_verify_success.json"))
 
                     else -> MockResponse().setResponseCode(404)
                 }
             }
         }
         mockWebServer.dispatcher = dispatcher
+
+        //Launch Screen
+        launchScreen()
 
         composeRule.onNodeWithText(
             composeRule.activity.getString(R.string.menu_upload),
@@ -298,11 +310,7 @@ class AuthenticateScreenTest {
 
         //Caption Layout should be hidden
         composeRule.onNodeWithTag(TestTags.CAPTION_TEXT_LAYOUT).assertIsNotDisplayed()
-
-        //Should show sign in button, its guestMode, still cant save caption
-        val expectedText = context.getString(R.string.save_caption)
-        composeRule.onNodeWithContentDescription(expectedText).assertExists()
-
-
+        //Should show save button, its authMode, already can save caption
+        composeRule.onNodeWithTag(TestTags.FLOATING_TOOLBAR_SAVE).assertIsDisplayed()
     }
 }

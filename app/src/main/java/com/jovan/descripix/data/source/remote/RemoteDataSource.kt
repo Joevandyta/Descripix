@@ -35,6 +35,7 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
+import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -168,7 +169,7 @@ class RemoteDataSource @Inject constructor(
                 location,
                 device,
                 model,
-                multipartBody!!,
+                multipartBody,
                 token = context.getString(R.string.bearer, token)
             )
         }
@@ -221,50 +222,93 @@ class RemoteDataSource @Inject constructor(
         image: Uri,
         context: Context
     ): ApiResponse<GenerateResponse> {
+        Log.d("Repository-generateCaption", "image :$image")
 
         val metadataBody =
             metadata.toString().toRequestBody("application/json".toMediaTypeOrNull())
-        try {
-            val imageFile = withContext(Dispatchers.IO) {
-                ImageConverter.uriToFile(image, context).reduceFileSize().resizeIfTooLarge()
-            }
 
-            val requestImageFile = imageFile.asRequestBody("image/jpeg".toMediaType())
-            val multipartBody = MultipartBody.Part.createFormData(
-                "image",
-                imageFile.name,
-                requestImageFile
-            )
-            return handleApiException {
-                apiService.generateCaption(
-                    languageCode = languageCode.toRequestBody(),
-                    metadata = metadataBody,
-                    image = multipartBody,
+        val finalFile: File? = when {
+            // 1️⃣ Kalau dari API (URL HTTP/HTTPS) → download
+            image.scheme == "http" || image.scheme == "https" -> {
+                Log.d("Repository-generateCaption", " HTTP Run")
 
-                )
-            }
-        } catch (e: Exception) {
-            val imageFile = withContext(Dispatchers.IO) {
-                ImageConverter.downloadImageToFile(context, image.toString())?.resizeIfTooLarge()
-                    ?.reduceFileSize()
-            }
-            imageFile?.let {
-                val requestImage = it.asRequestBody("image/jpeg".toMediaTypeOrNull())
-                val multipartBody = MultipartBody.Part.createFormData(
-                    "image",
-                    it.name,
-                    requestImage
-                )
-                return handleApiException {
-                    apiService.generateCaption(
-                        languageCode = languageCode.toRequestBody(),
-                        metadata = metadataBody,
-                        image = multipartBody
-                    )
+                withContext(Dispatchers.IO) {
+                    ImageConverter.downloadImageToFile(context, image.toString())
+                        ?.resizeIfTooLarge()
+                        ?.reduceFileSize()
                 }
             }
+
+            image.scheme == "content" || image.scheme == "file" || image.scheme == "android.resource"-> {
+                Log.d("Repository-generateCaption", " File Run")
+
+                withContext(Dispatchers.IO) {
+                    ImageConverter.uriToFile(image, context)
+                        .reduceFileSize()
+                        .resizeIfTooLarge()
+                }
+            }
+            else -> null
+        }
+        if (finalFile == null) {
             return ApiResponse(false, context.getString(R.string.failed_to_load_image), null)
         }
+        val requestImageFile = finalFile.asRequestBody("image/jpeg".toMediaType())
+        val multipartBody = MultipartBody.Part.createFormData("image", finalFile.name, requestImageFile)
+
+        return handleApiException {
+            apiService.generateCaption(
+                languageCode = languageCode.toRequestBody(),
+                metadata = metadataBody,
+                image = multipartBody
+            )
+        }
+
+//        try {
+//            Log.d("Repository-generateCaption", " Try Run")
+//
+//            val imageFile = withContext(Dispatchers.IO) {
+//                ImageConverter.uriToFile(image, context).reduceFileSize().resizeIfTooLarge()
+//            }
+//            val requestImageFile = imageFile.asRequestBody("image/jpeg".toMediaType())
+//            val multipartBody = MultipartBody.Part.createFormData(
+//                "image",
+//                imageFile.name,
+//                requestImageFile
+//            )
+//            return handleApiException {
+//                Log.d("Repository-generateCaption", " handleApiException Run")
+//                apiService.generateCaption(
+//                    languageCode = languageCode.toRequestBody(),
+//                    metadata = metadataBody,
+//                    image = multipartBody,
+//                )
+//            }
+//        }
+//        catch (e: Exception) {
+//            Log.d("Repository-generateCaption", " Catch Run")
+//
+//            val imageFile = withContext(Dispatchers.IO) {
+//                ImageConverter.downloadImageToFile(context, image.toString())?.resizeIfTooLarge()
+//                    ?.reduceFileSize()
+//            }
+//            imageFile?.let {
+//                val requestImage = it.asRequestBody("image/jpeg".toMediaTypeOrNull())
+//                val multipartBody = MultipartBody.Part.createFormData(
+//                    "image",
+//                    it.name,
+//                    requestImage
+//                )
+//                return handleApiException {
+//                    apiService.generateCaption(
+//                        languageCode = languageCode.toRequestBody(),
+//                        metadata = metadataBody,
+//                        image = multipartBody
+//                    )
+//                }
+//            }
+//            return ApiResponse(false, context.getString(R.string.failed_to_load_image), null)
+//        }
     }
     override suspend fun getCaptionList(
         token: String,

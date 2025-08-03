@@ -1,6 +1,6 @@
 package com.jovan.descripix.ui.screen.detail
 
-import android.content.ClipData
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutLinearInEasing
@@ -61,8 +61,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.ClipEntry
-import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -148,6 +146,7 @@ fun DetailScreen(
             isInitialCaptionSave = false
             toggleSaveActive = false
         }
+        Log.d("DetailScreen", "LaunchedEffect(Unit) viewModel.resetAllStates()")
         viewModel.getSession(context)
         viewModel.setCaptionEntity(captionEntity)
     }
@@ -160,6 +159,7 @@ fun DetailScreen(
         model,
         captionState
     ) {
+
         captionState?.let { state ->
             toggleSaveActive = !(captionText != state.caption
                     || author != state.author
@@ -167,6 +167,15 @@ fun DetailScreen(
                     || location != state.location
                     || device != state.device
                     || model != state.model)
+
+            Log.d("DetailScreen", "LaunchedEffect(\n" +
+                    "        $captionText, ${state.caption}\n" +
+                    "        $author, ${state.author}\n" +
+                    "        $selectedDate,${state.date} \n" +
+                    "        $location,${state.location} \n" +
+                    "        $device,${state.device}\n" +
+                    "        $model,${state.model} \n" +
+                    "    )")
         } ?: false
     }
 
@@ -248,6 +257,14 @@ fun DetailScreen(
                     savedCaption.status &&
                     savedCaption.data != null
                 ) {
+                    Log.d("DetailScreen", "savedCaption: $savedCaption")
+                    Log.d("DetailScreen", "savedCaptionSuccess(\n" +
+                            "        ${savedCaption.data.author},\n" +
+                            "        ${savedCaption.data.date},\n" +
+                            "        ${savedCaption.data.location},\n" +
+                            "        ${savedCaption.data.device},\n" +
+                            "        ${savedCaption.data.model},\n" +
+                            "    )")
                     viewModel.setCaptionEntity(
                         captionEntity.copy(
                             id = savedCaption.data.id,
@@ -261,10 +278,12 @@ fun DetailScreen(
                     )
                     isInitialCaptionSave = true
                     toggleSaveActive = true
+
+
                 } else {
                     visibleModal = ModalType.SAVEFAILED
                 }
-
+                Log.d("DetailScreen", "toggleSaveActive: $toggleSaveActive, isInitialCaptionSave: $isInitialCaptionSave")
             }
             AnimatedVisibility(
                 visible = visibleModal == ModalType.SAVEFAILED,
@@ -314,6 +333,7 @@ fun DetailScreen(
                     visibleModal = ModalType.DELETEFAILED
                 }
             }
+
             isToggleSaveEnabled = true
 
             AnimatedVisibility(
@@ -355,6 +375,7 @@ fun DetailScreen(
             val generatedCaption = (generatedCaptionState as UiState.Success).data
             LaunchedEffect(generatedCaptionState) {
                 if (generatedCaption.status) {
+                    Log.d("DetailScreen", "generatedCaption: ${generatedCaption.data}")
                     if (generatedCaption.data != null) {
                         captionText = generatedCaption.data.caption
                     }
@@ -663,8 +684,17 @@ fun DetailContent(
     var isZoomedOut by remember { mutableStateOf(true) }
     val clipboardManager = LocalClipboardManager.current
     var isCaptionLayoutVisible by remember { mutableStateOf(false) }
+
+    Log.d(
+        "DetailScreen-Debug",
+        "Recomposition - captionText: '$captionText', length: ${captionText.length}"
+    )
+
     LaunchedEffect(captionText) {
-        if (captionText.isNotEmpty()) isCaptionLayoutVisible = true
+        if (captionText.isNotEmpty()) {
+            Log.d("DetailScreen- CaptionDebug", "isCaptionLayoutVisible set to true")
+            isCaptionLayoutVisible = true
+        }
     }
 
     var showDatePicker by remember { mutableStateOf(false) }
@@ -945,7 +975,9 @@ fun DetailContent(
                     ) {
                         Icon(
                             imageVector = if (isMetadataExpanded) Icons.Filled.KeyboardArrowDown else Icons.Filled.KeyboardArrowUp,
-                            contentDescription = if (isMetadataExpanded) stringResource(R.string.show_less) else stringResource(R.string.show_more)
+                            contentDescription = if (isMetadataExpanded) stringResource(R.string.show_less) else stringResource(
+                                R.string.show_more
+                            )
                         )
                     }
                 }
