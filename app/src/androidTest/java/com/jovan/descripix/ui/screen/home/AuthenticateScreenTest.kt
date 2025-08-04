@@ -105,7 +105,7 @@ class AuthenticateScreenTest {
     }
     //    Authenticate Screen
     @Test
-    fun home_authenticatedScreen_session_isExpire_refreshToken() {
+    fun home_authenticated_sessionExpired_refreshesToken() {
         var tokenVerifyCallCount = 0
 
         val dispatcher = object : Dispatcher() {
@@ -117,6 +117,7 @@ class AuthenticateScreenTest {
                             .setResponseCode(401)
                             .setBody(JsonConverter.readStringFromFile("token_verify_failed.json"))
                     }
+
                     // 2. Refresh Token - success
                     request.path == "/auth/token-refresh/" && request.method == "POST" ->
                         MockResponse()
@@ -142,14 +143,14 @@ class AuthenticateScreenTest {
         //Launch Screen
         launchScreen()
 
-        composeRule.onNodeWithTag(TestTags.AUTHENTICATED_SCREEN).assertExists()
+        composeRule.onNodeWithTag(TestTags.HOME_AUTH_SCREEN).assertExists()
         runBlocking {
             assertThat(userPreference.getSession().first().token).isEqualTo("new_access_token")
         }
     }
 
     @Test
-    fun home_authenticatedScreen_refreshToken_isExpire_showGuestScreen() {
+    fun home_authenticated_refreshTokenExpired_showsGuestUI() {
 
         val dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
@@ -187,7 +188,7 @@ class AuthenticateScreenTest {
     }
 
     @Test
-    fun home_authenticatedScreen_captionListIsEmpty_showsEmptyState() {
+    fun home_authenticated_emptyCaptions_showsEmptyState() {
 
         //Its run on authenticateScreen
         val dispatcher = object : Dispatcher() {
@@ -214,7 +215,7 @@ class AuthenticateScreenTest {
     }
 
     @Test
-    fun home_authenticatedScreen_captionListIsNotEmpty_displaysCaptions() {
+    fun home_authenticated_captionsExist_displaysCaptions() {
 
         val dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
@@ -244,7 +245,7 @@ class AuthenticateScreenTest {
         //Launch Screen
         launchScreen()
 
-        composeRule.onNodeWithTag(TestTags.AUTHENTICATED_SCREEN).assertExists()
+        composeRule.onNodeWithTag(TestTags.HOME_AUTH_SCREEN).assertExists()
         composeRule.onNodeWithText("online caption 1").assertExists("Caption not found")
 
         runBlocking {
@@ -254,7 +255,7 @@ class AuthenticateScreenTest {
     }
 
     @Test
-    fun home_authenticatedScreen_clickCaptionItem_displaysDetailCaptions() {
+    fun home_authenticated_clickCaptionItem_opensCaptionDetail() {
 
         val dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
@@ -278,14 +279,14 @@ class AuthenticateScreenTest {
         //Launch Screen
         launchScreen()
 
-        composeRule.onNodeWithTag(TestTags.AUTHENTICATED_SCREEN).assertExists()
+        composeRule.onNodeWithTag(TestTags.HOME_AUTH_SCREEN).assertExists()
         composeRule.onNodeWithText("online caption 1").assertExists("Caption not found")
         composeRule.onNodeWithText("online caption 1").performClick()
         composeRule.onNodeWithTag(TestTags.DETAILS_SCREEN).assertExists()
     }
 
     @Test
-    fun uploadImage_AuthenticateMode_ShouldShowDetailScreen(){
+    fun uploadImage_authenticatedMode_opensDetailScreen_showsSaveCaptionButton(){
         val dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
                 return when {

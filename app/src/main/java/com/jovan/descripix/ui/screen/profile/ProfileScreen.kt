@@ -68,6 +68,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -86,6 +87,7 @@ import com.jovan.descripix.data.source.local.entity.UserEntity
 import com.jovan.descripix.data.source.remote.request.UserRequest
 import com.jovan.descripix.ui.common.Language
 import com.jovan.descripix.ui.common.ModalType
+import com.jovan.descripix.ui.common.TestTags
 import com.jovan.descripix.ui.common.UiState
 import com.jovan.descripix.ui.component.ComingSoonModal
 import com.jovan.descripix.ui.component.LogoutModal
@@ -145,7 +147,6 @@ fun ProfileScreen(
                     }
                 }
                 AutenticatedDisplay(modifier = modifier)
-
             } else {
                 GuestDisplay()
             }
@@ -185,7 +186,8 @@ fun GuestDisplay(
     Column(
         modifier = modifier
             .background(MaterialTheme.colorScheme.background)
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .testTag(TestTags.PROFILE_GUEST_SCREEN),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         ConstraintLayout(
@@ -500,7 +502,8 @@ fun AutenticatedDisplay(
                 modifier = modifier
                     .background(MaterialTheme.colorScheme.background)
                     .fillMaxWidth()
-                    .verticalScroll(rememberScrollState()),
+                    .verticalScroll(rememberScrollState())
+                    .testTag(TestTags.PROFILE_AUTH_SCREEN),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 ConstraintLayout(
@@ -992,7 +995,8 @@ fun EditProfile(
         shape = RoundedCornerShape(16.dp),
         modifier = modifier
             .fillMaxWidth()
-            .padding(8.dp),
+            .padding(8.dp)
+            .testTag(TestTags.EDIT_PROFILE_MODAL),
         colors = CardDefaults.cardColors(MaterialTheme.colorScheme.primaryContainer),
     ) {
         ConstraintLayout(
@@ -1026,7 +1030,8 @@ fun EditProfile(
                         top.linkTo(titleText.bottom, margin = 8.dp)
                         start.linkTo(parent.start)
                         end.linkTo(parent.end)
-                    },
+                    }
+                    .testTag(TestTags.EDIT_ABOUT_ME),
                 maxLines = 4,
                 singleLine = false,
                 colors = OutlinedTextFieldDefaults.colors(
@@ -1150,7 +1155,8 @@ fun EditProfile(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f),
+                        .weight(1f)
+                        .testTag(TestTags.EDIT_PROFILE_SUBMIT),
                     enabled = isButtonAcivated,
                     shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(

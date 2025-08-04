@@ -17,6 +17,19 @@
             </AndroidTestResultsTableState>
           </value>
         </entry>
+        <entry key="-2017945415">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Medium_Phone" value="120" />
+                  <entry key="Tests" value="360" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
         <entry key="-1932815711">
           <value>
             <AndroidTestResultsTableState>
@@ -71,6 +84,19 @@
           </value>
         </entry>
         <entry key="-1234670170">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Medium_Phone" value="120" />
+                  <entry key="Tests" value="360" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
+        <entry key="-1225606306">
           <value>
             <AndroidTestResultsTableState>
               <option name="preferredColumnWidths">
@@ -229,6 +255,19 @@
             </AndroidTestResultsTableState>
           </value>
         </entry>
+        <entry key="-51747001">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Medium_Phone" value="120" />
+                  <entry key="Tests" value="360" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
         <entry key="79408847">
           <value>
             <AndroidTestResultsTableState>
@@ -251,6 +290,19 @@
                   <entry key="Medium_Phone" value="120" />
                   <entry key="Tests" value="360" />
                   <entry key="Xiaomi 22021211RG" value="120" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
+        <entry key="348182350">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Medium_Phone" value="120" />
+                  <entry key="Tests" value="360" />
                 </map>
               </option>
             </AndroidTestResultsTableState>
@@ -308,6 +360,19 @@
             </AndroidTestResultsTableState>
           </value>
         </entry>
+        <entry key="1128875605">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Medium_Phone" value="120" />
+                  <entry key="Tests" value="360" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
         <entry key="1215936126">
           <value>
             <AndroidTestResultsTableState>
@@ -336,6 +401,19 @@
           </value>
         </entry>
         <entry key="1391841191">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Medium_Phone" value="120" />
+                  <entry key="Tests" value="360" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
+        <entry key="1429093651">
           <value>
             <AndroidTestResultsTableState>
               <option name="preferredColumnWidths">

@@ -305,7 +305,7 @@ fun AutenticatedScreen(
         modifier = modifier
             .fillMaxSize()
             .padding(8.dp)
-            .testTag(TestTags.AUTHENTICATED_SCREEN)
+            .testTag(TestTags.HOME_AUTH_SCREEN)
     ) {
         if (!isLoading && captionItems.isEmpty()) {
             Box(

@@ -82,7 +82,6 @@ class GuestScreenTest {
                 DescripixApp(navController = navController)
             }
         }
-
     }
 
     @After
@@ -90,14 +89,15 @@ class GuestScreenTest {
         mockWebServer.shutdown()
         IdlingRegistry.getInstance().unregister(EspressoIdlingResource.countingIdlingResource)
     }
+
     //    Authenticate Screen
     @Test
-    fun home_guestScreen_whenSessionNotAvailable_shouldShowGuestUI() {
+    fun home_guestMode_showsGuestUI() {
         composeRule.onNodeWithTag(TestTags.GUEST_SCREEN).assertExists()
     }
 
     @Test
-    fun uploadImage_GuestMode_ShouldShowDetailScreen() {
+    fun uploadImage_guestMode_opensDetailScreen_showsSignInButton() {
         val context = composeRule.activity
 
         composeRule.onNodeWithTag(
@@ -121,7 +121,7 @@ class GuestScreenTest {
     }
 
     @Test
-    fun home_loginFlow_shouldShowAuthenticatedScreen() {
+    fun home_loginFlow_shouldShowAuthenticatedScreen () {
         val dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
                 return when {
@@ -140,6 +140,6 @@ class GuestScreenTest {
         mockWebServer.dispatcher = dispatcher
 
         composeRule.onNodeWithTag(TestTags.SIGN_IN_BUTTON).performClick()
-        composeRule.onNodeWithTag(TestTags.AUTHENTICATED_SCREEN).assertExists()
+        composeRule.onNodeWithTag(TestTags.HOME_AUTH_SCREEN).assertExists()
     }
 }

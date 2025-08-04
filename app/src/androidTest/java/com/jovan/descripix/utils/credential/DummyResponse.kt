@@ -38,7 +38,7 @@ object DummyResponse {
                 // 6. Update User Detail
                 request.path == "/auth/user-edit/" && request.method == "PUT" ->
                     MockResponse().setResponseCode(200)
-                        .setBody(JsonConverter.readStringFromFile("caption_detail_response.json"))
+                        .setBody(JsonConverter.readStringFromFile("update_profile_success.json"))
 
                 // 7. Save Caption
                 request.path == "/caption/save/" && request.method == "POST" ->

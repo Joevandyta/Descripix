@@ -16,27 +16,19 @@
       <SelectionState runConfigName="homeScreen()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="OfflineAuthenticateScreenTest">
+      <SelectionState runConfigName="ProfileScreenTest">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="saveCaption_shouldChangeSaveButtonState()">
-        <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-08-03T02:58:31.174538800Z">
-          <Target type="DEFAULT_BOOT">
-            <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\joeva\.android\avd\Medium_Phone.avd" />
-            </handle>
-          </Target>
-        </DropdownSelection>
-        <DialogSelection />
-      </SelectionState>
-      <SelectionState runConfigName="updateSavedCaptionResult_shouldFetchNewData()">
+      <SelectionState runConfigName="changeLanguage_ShouldshowDifferentLanguage()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="DetailsScreenTest">
+      <SelectionState runConfigName="authenticateProfile_onlineMode_shouldShowAuthenticateScreen()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="AuthenticateScreenTest">
+      <SelectionState runConfigName="updateUserDetail_shouldFetch_newUserDetailsData()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="Tests in 'com.jovan.descripix.ui.screen'">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>

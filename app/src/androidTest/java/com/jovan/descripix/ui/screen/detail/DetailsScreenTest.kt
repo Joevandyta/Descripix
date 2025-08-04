@@ -100,7 +100,7 @@ class DetailsScreenTest {
         }
     }
     @Test
-    fun generateCaption_forFirstTime() {
+    fun caption_generateFirstTime_displaysGeneratedCaption() {
         val context = composeRule.activity
 
         //Start detail screen from by uploading Image from gallery
@@ -139,7 +139,7 @@ class DetailsScreenTest {
     }
 
     @Test
-    fun regenerateCaption_shouldShowNewCaption() {
+    fun caption_regenerate_updatesDisplayedCaption() {
         launchDetailScreen(FakeObject.savedCaptionEntity)
 
         val context = composeRule.activity
@@ -178,7 +178,7 @@ class DetailsScreenTest {
     }
 
     @Test
-    fun saveCaption_shouldChangeSaveButtonState() {
+    fun caption_save_changesSaveButtonState() {
         val context = composeRule.activity
 
         launchDetailScreen(FakeObject.uploadCaptionEntity)
@@ -231,7 +231,7 @@ class DetailsScreenTest {
     }
 
     @Test
-    fun updateSavedCaptionResult_shouldFetchNewData(){
+    fun caption_updateSaved_fetchesUpdatedData(){
         val context = composeRule.activity
         val fakeCaption = FakeObject.savedCaptionEntity
         launchDetailScreen(fakeCaption)
@@ -301,7 +301,7 @@ class DetailsScreenTest {
     }
 
     @Test
-    fun deleteSavedCaptionResult_shouldFetchNewData(){
+    fun caption_deleteSaved_changeSaveButtonState(){
         val context = composeRule.activity
         val fakeCaption = FakeObject.savedCaptionEntity
         launchDetailScreen(fakeCaption)
