@@ -17,6 +17,12 @@ object EspressoIdlingResource {
             countingIdlingResource.decrement()
         }
     }
+
+    fun reset() {
+        while (!countingIdlingResource.isIdleNow) {
+            countingIdlingResource.decrement()
+        }
+    }
 }
 
 inline fun <T> wrapEspressoIdlingResource(function: () -> T): T {

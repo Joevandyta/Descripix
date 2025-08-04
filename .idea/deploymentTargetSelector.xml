@@ -4,7 +4,7 @@
     <selectionStates>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-07-27T14:42:34.045097Z">
+        <DropdownSelection timestamp="2025-07-31T15:42:49.961607400Z">
           <Target type="DEFAULT_BOOT">
             <handle>
               <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\joeva\.android\avd\Medium_Phone.avd" />
@@ -12,34 +12,23 @@
           </Target>
         </DropdownSelection>
         <DialogSelection />
-      </SelectionState>
-      <SelectionState runConfigName="GreetingPreview">
-        <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
       <SelectionState runConfigName="homeScreen()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="home_authenticatedScreen_refreshToken_isExpire_showGuestScreen()">
+      <SelectionState runConfigName="ProfileScreenTest">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="home_authenticatedScreen_captionListIsNotEmpty_displaysCaptions()">
+      <SelectionState runConfigName="changeLanguage_ShouldshowDifferentLanguage()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="home_authenticatedScreen_clickCaptionItem_displaysDetailCaptions()">
+      <SelectionState runConfigName="authenticateProfile_onlineMode_shouldShowAuthenticateScreen()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="upload()">
+      <SelectionState runConfigName="updateUserDetail_shouldFetch_newUserDetailsData()">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-07-30T14:44:01.961131300Z">
-          <Target type="DEFAULT_BOOT">
-            <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\joeva\.android\avd\Medium_Phone.avd" />
-            </handle>
-          </Target>
-        </DropdownSelection>
-        <DialogSelection />
       </SelectionState>
-      <SelectionState runConfigName="home_loginFlow_shouldShowAuthenticatedScreen()">
+      <SelectionState runConfigName="Tests in 'com.jovan.descripix.ui.screen'">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>

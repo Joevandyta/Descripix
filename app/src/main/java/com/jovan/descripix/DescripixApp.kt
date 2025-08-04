@@ -19,6 +19,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -29,6 +30,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.jovan.descripix.ui.common.TestTags
 import com.jovan.descripix.ui.navigation.NavigationItem
 import com.jovan.descripix.ui.navigation.Screen
 import com.jovan.descripix.ui.screen.detail.DetailScreen
@@ -173,7 +175,7 @@ fun BottomBar(
                 icon = {
                     Icon(
                         imageVector = item.icon,
-                        contentDescription = item.title
+                        contentDescription = item.title,
                     )
                 },
                 label = { Text(item.title) },
@@ -187,7 +189,8 @@ fun BottomBar(
                         restoreState = true
                         launchSingleTop = true
                     }
-                }
+                },
+                modifier = Modifier.testTag(item.screen.route + TestTags.BOTTOM_BAR_ICON)
             )
         }
     }

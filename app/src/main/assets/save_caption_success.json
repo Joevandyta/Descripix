@@ -1,0 +1,15 @@
+{
+  "status": true,
+  "message": "Caption saved successfully",
+  "data": {
+    "id": 2,
+    "caption": "Caption Body is Generated Successfully",
+    "author": "Test Author",
+    "date": "",
+    "location": "Test Location",
+    "device": "",
+    "model": "Test Model",
+    "image": "https://smaller-pictures.appspot.com/images/dreamstime_xxl_65780868_small.jpg",
+    "uid": "1"
+  }
+}

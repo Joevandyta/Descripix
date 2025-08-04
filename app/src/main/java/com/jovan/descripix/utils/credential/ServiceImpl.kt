@@ -48,7 +48,6 @@ class ServiceImpl @Inject constructor(
     override fun testImagedUrl(): Uri {
 
         val res = context.resources
-
         val uri = (ContentResolver.SCHEME_ANDROID_RESOURCE + "://" +
                 res.getResourcePackageName(R.drawable.image_dummy) + "/" +
                 res.getResourceTypeName(R.drawable.image_dummy) + "/" +

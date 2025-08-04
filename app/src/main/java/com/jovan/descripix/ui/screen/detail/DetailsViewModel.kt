@@ -231,6 +231,8 @@ class DetailsViewModel @Inject constructor(
         context: Context
     ) {
         _generatedCaption.value = UiState.Loading
+
+        Log.d("DetailsViewModel - generateCaption", "Run")
         viewModelScope.launch {
             val languageCode = descripixUseCase.getLanguage().first().code
             try {
@@ -244,10 +246,14 @@ class DetailsViewModel @Inject constructor(
                 )
 
                 val result = descripixUseCase.generateCaption(languageCode, metadata, image, context)
+                Log.d("DetailsViewModel - generateCaption", "Result : $result")
+
                 _generatedCaption.value = UiState.Success(result)
 
             } catch (e: Exception) {
                 _generatedCaption.value = UiState.Error(e.message ?: context.getString(R.string.unknown_error))
+                Log.d("DetailsViewModel - generateCaption", "Error : ${_generatedCaption.value}")
+
             }
         }
     }
@@ -323,10 +329,12 @@ class DetailsViewModel @Inject constructor(
                     image = image
                 )
                 val result = descripixUseCase.saveCaption(captionRequest, token, context)
-
                 _saveCaption.value = UiState.Success(result)
+                Log.d("DetailsViewModel - saveCaption", "Success : $result")
             }catch (e: Exception) {
+
                 _saveCaption.value = UiState.Error(e.message ?: context.getString(R.string.unknown_error))
+                Log.d("DetailsViewModel - saveCaption", "Error : $e")
             }
         }
     }
