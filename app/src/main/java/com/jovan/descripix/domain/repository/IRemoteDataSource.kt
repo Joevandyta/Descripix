@@ -50,6 +50,7 @@ interface IRemoteDataSource {
     ): ApiResponse<CaptionDataResponse>
 
     suspend fun generateCaption(
+        token: String,
         languageCode: String,
         metadata: JSONObject,
         image: Uri,

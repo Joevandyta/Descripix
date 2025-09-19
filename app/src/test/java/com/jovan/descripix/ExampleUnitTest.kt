@@ -1,8 +1,13 @@
 package com.jovan.descripix
 
+import androidx.lifecycle.ViewModel
+import com.jovan.descripix.domain.usecase.DescripixUseCase
+import com.jovan.descripix.utils.credential.IService
+import dagger.hilt.android.lifecycle.HiltViewModel
 import org.junit.Test
 
 import org.junit.Assert.*
+import javax.inject.Inject
 
 /**
  * Example local unit test, which will execute on the development machine (host).
@@ -15,3 +20,5 @@ class ExampleUnitTest {
         assertEquals(4, 2 + 2)
     }
 }
+
+

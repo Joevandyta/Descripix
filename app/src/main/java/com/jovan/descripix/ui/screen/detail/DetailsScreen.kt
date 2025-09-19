@@ -1,6 +1,5 @@
 package com.jovan.descripix.ui.screen.detail
 
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutLinearInEasing
@@ -31,7 +30,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.BasicAlertDialog
@@ -146,7 +144,6 @@ fun DetailScreen(
             isInitialCaptionSave = false
             toggleSaveActive = false
         }
-        Log.d("DetailScreen", "LaunchedEffect(Unit) viewModel.resetAllStates()")
         viewModel.getSession(context)
         viewModel.setCaptionEntity(captionEntity)
     }
@@ -167,15 +164,6 @@ fun DetailScreen(
                     || location != state.location
                     || device != state.device
                     || model != state.model)
-
-            Log.d("DetailScreen", "LaunchedEffect(\n" +
-                    "        $captionText, ${state.caption}\n" +
-                    "        $author, ${state.author}\n" +
-                    "        $selectedDate,${state.date} \n" +
-                    "        $location,${state.location} \n" +
-                    "        $device,${state.device}\n" +
-                    "        $model,${state.model} \n" +
-                    "    )")
         } ?: false
     }
 
@@ -241,7 +229,7 @@ fun DetailScreen(
             isToggleSaveEnabled = false
             Box(
                 contentAlignment = Alignment.TopCenter,
-                modifier = modifier
+                modifier = Modifier
                     .fillMaxSize()
             ) {
                 LinearProgressIndicator(
@@ -257,14 +245,7 @@ fun DetailScreen(
                     savedCaption.status &&
                     savedCaption.data != null
                 ) {
-                    Log.d("DetailScreen", "savedCaption: $savedCaption")
-                    Log.d("DetailScreen", "savedCaptionSuccess(\n" +
-                            "        ${savedCaption.data.author},\n" +
-                            "        ${savedCaption.data.date},\n" +
-                            "        ${savedCaption.data.location},\n" +
-                            "        ${savedCaption.data.device},\n" +
-                            "        ${savedCaption.data.model},\n" +
-                            "    )")
+
                     viewModel.setCaptionEntity(
                         captionEntity.copy(
                             id = savedCaption.data.id,
@@ -283,7 +264,6 @@ fun DetailScreen(
                 } else {
                     visibleModal = ModalType.SAVEFAILED
                 }
-                Log.d("DetailScreen", "toggleSaveActive: $toggleSaveActive, isInitialCaptionSave: $isInitialCaptionSave")
             }
             AnimatedVisibility(
                 visible = visibleModal == ModalType.SAVEFAILED,
@@ -313,7 +293,7 @@ fun DetailScreen(
             isToggleSaveEnabled = false
             Box(
                 contentAlignment = Alignment.TopCenter,
-                modifier = modifier
+                modifier = Modifier
                     .fillMaxSize()
             ) {
                 LinearProgressIndicator(
@@ -362,7 +342,7 @@ fun DetailScreen(
             isGenerateButtonActive = false
             Box(
                 contentAlignment = Alignment.TopCenter,
-                modifier = modifier
+                modifier = Modifier
                     .fillMaxSize()
             ) {
                 LinearProgressIndicator(
@@ -375,7 +355,6 @@ fun DetailScreen(
             val generatedCaption = (generatedCaptionState as UiState.Success).data
             LaunchedEffect(generatedCaptionState) {
                 if (generatedCaption.status) {
-                    Log.d("DetailScreen", "generatedCaption: ${generatedCaption.data}")
                     if (generatedCaption.data != null) {
                         captionText = generatedCaption.data.caption
                     }
@@ -409,7 +388,7 @@ fun DetailScreen(
         is UiState.Loading -> {
             Box(
                 contentAlignment = Alignment.Center,
-                modifier = modifier
+                modifier = Modifier
                     .background(Color.Transparent)
                     .fillMaxSize()
             ) {
@@ -420,7 +399,7 @@ fun DetailScreen(
         is UiState.Success -> {
             val session = (sessionState as UiState.Success)
             Box(
-                modifier = modifier
+                modifier = Modifier
                     .padding(4.dp)
                     .testTag(TestTags.DETAILS_SCREEN)
             ) {
@@ -583,58 +562,62 @@ fun DetailScreen(
                                 device = if (isDeviceChecked) device else "",
                                 model = if (isModelChecked) model else "",
                                 image = captionEntity.image.toUri(),
+                                token = session.data.token,
                                 context = context
                             )
-                        },
-                        isLogin = session.data.isLogin,
-                        onLoginClicked = {
-                            viewModel.login(context)
                         },
                         toogleSaveActive = toggleSaveActive,
                         isToogleSaveEnabled = isToggleSaveEnabled,
                         onSaveClicked = {
-                            if (!toggleSaveActive) {
-                                //Save
-                                if (!isInitialCaptionSave) {
+                            if (!session.data.isLogin){
+                                viewModel.login(context)
+                            }
+                            else{
+                                if (!toggleSaveActive) {
                                     //Save
-                                    viewModel.saveCaption(
-                                        caption = captionText,
-                                        author = author,
-                                        date = selectedDate,
-                                        location = location,
-                                        device = device,
-                                        model = model,
-                                        image = captionEntity.image,
-                                        token = session.data.token,
-                                        context = context
-                                    )
-                                } else {
-                                    //Edit
-                                    captionState?.let {
-                                        viewModel.editCaption(
-                                            id = it.id,
+                                    if (!isInitialCaptionSave) {
+                                        //Save
+                                        viewModel.saveCaption(
                                             caption = captionText,
-                                            token = session.data.token,
                                             author = author,
                                             date = selectedDate,
                                             location = location,
                                             device = device,
                                             model = model,
                                             image = captionEntity.image,
+                                            token = session.data.token,
+                                            context = context
+                                        )
+                                    } else {
+                                        //Edit
+                                        captionState?.let {
+                                            viewModel.editCaption(
+                                                id = it.id,
+                                                caption = captionText,
+                                                token = session.data.token,
+                                                author = author,
+                                                date = selectedDate,
+                                                location = location,
+                                                device = device,
+                                                model = model,
+                                                image = captionEntity.image,
+                                                context = context
+                                            )
+                                        }
+                                    }
+                                }
+                                else {
+                                    //Delete
+                                    captionState?.let {
+                                        viewModel.deleteCaption(
+                                            id = it.id,
+                                            token = session.data.token,
                                             context = context
                                         )
                                     }
                                 }
-                            } else {
-                                //Delete
-                                captionState?.let {
-                                    viewModel.deleteCaption(
-                                        id = it.id,
-                                        token = session.data.token,
-                                        context = context
-                                    )
-                                }
                             }
+
                         }
                     )
                 }
@@ -685,14 +668,10 @@ fun DetailContent(
     val clipboardManager = LocalClipboardManager.current
     var isCaptionLayoutVisible by remember { mutableStateOf(false) }
 
-    Log.d(
-        "DetailScreen-Debug",
-        "Recomposition - captionText: '$captionText', length: ${captionText.length}"
-    )
+
 
     LaunchedEffect(captionText) {
         if (captionText.isNotEmpty()) {
-            Log.d("DetailScreen- CaptionDebug", "isCaptionLayoutVisible set to true")
             isCaptionLayoutVisible = true
         }
     }
@@ -718,117 +697,93 @@ fun DetailContent(
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
     ) {
-        val (header, caption, textHelperZoom, textHelperMeta, metadata, space) = createRefs()
+        val (image, caption, textHelperZoom, textHelperMeta, metadata, space) = createRefs()
 
-        ConstraintLayout(
-            modifier = Modifier
-                .fillMaxWidth()
-                .constrainAs(header) {
-                    top.linkTo(parent.top)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                }
-        ) {
-            val (backButton, image) = createRefs()
-            IconButton(
-                onClick = onBack,
-                modifier = Modifier.constrainAs(backButton) {
-                    top.linkTo(parent.top)
-                    start.linkTo(parent.start)
-                }
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                    contentDescription = stringResource(R.string.back)
-                )
-            }
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp)
-                    .constrainAs(image) {
-                        top.linkTo(backButton.bottom)
-                        start.linkTo(parent.start)
-                        end.linkTo(parent.end)
-                    },
-                shape = RoundedCornerShape(16.dp),
-                elevation = CardDefaults.cardElevation(
-                    defaultElevation = 4.dp,
-                ),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                )
-            ) {
-                AsyncImage(
-                    model = captionEntity.image,
-                    contentDescription = null,
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(max = 400.dp)
-                        .padding(4.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .clipToBounds()
-                        .pointerInput(Unit) {
-                            detectTapGestures(
-                                onDoubleTap = {
-                                    if (scale > 1f) {
-                                        scale = 1f
-                                        offset = Offset.Zero
-                                        isZoomedOut = true
-                                    } else {
-                                        scale = 2f
-                                        isZoomedOut = false
-                                    }
-                                },
-                                onTap = {
-                                    isZoomedOut = !isZoomedOut
-                                    if (isZoomedOut) {
-                                        scale = 1f
-                                        offset = Offset.Zero
-                                    }
-                                }
-                            )
-                        }
-                        .pointerInput(Unit) {
-                            detectTransformGestures { _, pan, zoom, _ ->
-                                val newScale = (scale * zoom).coerceIn(1f, 5f)
-                                if (newScale > 1f) {
-                                    scale = newScale
-
-                                    // Batasi offset agar tidak keluar dari bounds
-                                    val maxOffset = (size.width * (scale - 1)) / 2
-                                    offset = Offset(
-                                        x = (offset.x + pan.x).coerceIn(-maxOffset, maxOffset),
-                                        y = (offset.y + pan.y).coerceIn(-maxOffset, maxOffset)
-                                    )
-                                    isZoomedOut = false
-                                }
-                            }
-                        }
-                        .graphicsLayer(
-                            scaleX = scale,
-                            scaleY = scale,
-                            translationX = offset.x,
-                            translationY = offset.y
-                        )
-
-                )
-            }
-
-        }
         Text(
             text = stringResource(R.string.pinch_to_zoom_image),
             textAlign = TextAlign.Center,
             fontSize = 14.sp,
             modifier = Modifier
                 .constrainAs(textHelperZoom) {
-                    top.linkTo(header.bottom)
+                    top.linkTo(image.bottom)
                     start.linkTo(parent.start)
                     end.linkTo(parent.end)
                 }
 
         )
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+                .constrainAs(image) {
+                    top.linkTo(parent.top)
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                },
+            shape = RoundedCornerShape(16.dp),
+            elevation = CardDefaults.cardElevation(
+                defaultElevation = 4.dp,
+            ),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.background
+            )
+        ) {
+            AsyncImage(
+                model = captionEntity.image,
+                contentDescription = null,
+                contentScale = ContentScale.Fit,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 400.dp)
+                    .padding(4.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .clipToBounds()
+                    .pointerInput(Unit) {
+                        detectTapGestures(
+                            onDoubleTap = {
+                                if (scale > 1f) {
+                                    scale = 1f
+                                    offset = Offset.Zero
+                                    isZoomedOut = true
+                                } else {
+                                    scale = 2f
+                                    isZoomedOut = false
+                                }
+                            },
+                            onTap = {
+                                isZoomedOut = !isZoomedOut
+                                if (isZoomedOut) {
+                                    scale = 1f
+                                    offset = Offset.Zero
+                                }
+                            }
+                        )
+                    }
+                    .pointerInput(Unit) {
+                        detectTransformGestures { _, pan, zoom, _ ->
+                            val newScale = (scale * zoom).coerceIn(1f, 5f)
+                            if (newScale > 1f) {
+                                scale = newScale
+
+                                // Batasi offset agar tidak keluar dari bounds
+                                val maxOffset = (size.width * (scale - 1)) / 2
+                                offset = Offset(
+                                    x = (offset.x + pan.x).coerceIn(-maxOffset, maxOffset),
+                                    y = (offset.y + pan.y).coerceIn(-maxOffset, maxOffset)
+                                )
+                                isZoomedOut = false
+                            }
+                        }
+                    }
+                    .graphicsLayer(
+                        scaleX = scale,
+                        scaleY = scale,
+                        translationX = offset.x,
+                        translationY = offset.y
+                    )
+
+            )
+        }
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -867,7 +822,7 @@ fun DetailContent(
             ) {
                 Card(
                     shape = CardDefaults.elevatedShape,
-                    colors = CardDefaults.cardColors(MaterialTheme.colorScheme.secondaryContainer),
+                    colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceVariant),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(8.dp)
@@ -884,7 +839,7 @@ fun DetailContent(
                             maxLines = 5,
                             textStyle = MaterialTheme.typography.bodyLarge.copy(
                                 textAlign = TextAlign.Justify,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                                color = MaterialTheme.colorScheme.onSurface
                             ),
                             modifier = Modifier
                                 .padding(8.dp)
@@ -901,7 +856,8 @@ fun DetailContent(
                         ) {
                             Icon(
                                 painter = painterResource(R.drawable.ic_copy),
-                                contentDescription = stringResource(R.string.copy)
+                                contentDescription = stringResource(R.string.copy),
+                                tint = MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }
@@ -934,7 +890,7 @@ fun DetailContent(
             val (title, list) = createRefs()
             Card(
                 shape = RoundedCornerShape(8.dp),
-                colors = CardDefaults.cardColors(MaterialTheme.colorScheme.secondaryContainer),
+                colors = CardDefaults.cardColors(MaterialTheme.colorScheme.primary),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(4.dp)
@@ -947,13 +903,14 @@ fun DetailContent(
                 ConstraintLayout(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 8.dp)
+                        .padding(vertical = 4.dp)
                 ) {
                     val (left, right) = createRefs()
                     Text(
                         text = stringResource(R.string.image_metadata),
                         style = MaterialTheme.typography.bodyLarge.copy(
-                            fontSize = 20.sp
+                            fontSize = 20.sp,
+                            color = MaterialTheme.colorScheme.onPrimary
                         ),
                         modifier = Modifier
                             .padding(horizontal = 16.dp)
@@ -977,7 +934,8 @@ fun DetailContent(
                             imageVector = if (isMetadataExpanded) Icons.Filled.KeyboardArrowDown else Icons.Filled.KeyboardArrowUp,
                             contentDescription = if (isMetadataExpanded) stringResource(R.string.show_less) else stringResource(
                                 R.string.show_more
-                            )
+                            ),
+                            tint = MaterialTheme.colorScheme.onPrimary
                         )
                     }
                 }
@@ -1001,7 +959,7 @@ fun DetailContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(4.dp),
-                    colors = CardDefaults.cardColors(MaterialTheme.colorScheme.secondaryContainer)
+                    colors = CardDefaults.cardColors(MaterialTheme.colorScheme.tertiaryContainer)
                 ) {
                     MetadataItem(
                         label = stringResource(R.string.string_author),

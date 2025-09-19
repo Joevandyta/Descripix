@@ -21,9 +21,9 @@ interface IDescripixRepository {
 
     suspend fun logout(refresh: String, context: Context): ApiResponse<Unit>
 
-    suspend fun saveLanguage(language: Language)
-
-    fun getLanguage(): Flow<Language>
+//    suspend fun saveLanguage(language: Language)
+//
+//    fun getLanguage(): Flow<Language>
 
     suspend fun login(googleId: String, context: Context): ApiResponse<LoginResponse>
 
@@ -39,7 +39,7 @@ interface IDescripixRepository {
 
     suspend fun editCaption(id: Int, captionRequest: CaptionRequest, token: String, context: Context): ApiResponse<Unit>
 
-    suspend fun generateCaption(languageCode: String, metadata: JSONObject, image: Uri, context: Context): ApiResponse<GenerateResponse>
+    suspend fun generateCaption(token: String, languageCode: String, metadata: JSONObject, image: Uri, context: Context): ApiResponse<GenerateResponse>
 
     suspend fun getCaptionDetails(id: Int, token: String, context: Context) : ApiResponse<CaptionDataResponse>
 

@@ -31,13 +31,13 @@ class DescripixInteractor @Inject constructor(private val repository: IDescripix
         context: Context
     ): ApiResponse<LoginResponse> = repository.login(googleId, context)
 
-    override suspend fun saveLanguage(language: Language) {
-        return repository.saveLanguage(language)
-    }
-
-    override fun getLanguage(): Flow<Language> {
-        return repository.getLanguage()
-    }
+//    override suspend fun saveLanguage(language: Language) {
+//        return repository.saveLanguage(language)
+//    }
+//
+//    override fun getLanguage(): Flow<Language> {
+//        return repository.getLanguage()
+//    }
 
     override fun isConnected(): Flow<Boolean> = repository.isConnected()
     override suspend fun getAllCaptions(isConnected: Boolean, token: String, context: Context): Flow<List<CaptionEntity>> =
@@ -58,8 +58,8 @@ class DescripixInteractor @Inject constructor(private val repository: IDescripix
     override suspend fun editCaption(id: Int, captionRequest: CaptionRequest, token: String, context: Context): ApiResponse<Unit> =
         repository.editCaption(id, captionRequest, token, context)
 
-    override suspend fun generateCaption(languageCode: String, metadata: JSONObject, image: Uri, context: Context) =
-        repository.generateCaption(languageCode, metadata, image, context)
+    override suspend fun generateCaption(token: String,languageCode: String, metadata: JSONObject, image: Uri, context: Context) =
+        repository.generateCaption(token, languageCode, metadata, image, context)
 
     override suspend fun getCaptionDetails(id: Int, token: String, context: Context) : ApiResponse<CaptionDataResponse> =
         repository.getCaptionDetails(id, token, context)

@@ -69,7 +69,7 @@ fun SplashScreen() {
         contentAlignment = Alignment.Center
     ) {
         Image(
-            painter = painterResource(id = R.drawable.desccripix_logo_backgroundless),
+            painter = painterResource(id = R.drawable.descripix_logo),
             contentDescription = stringResource(R.string.descripix_logo),
             modifier = Modifier
                 .scale(scale.value)

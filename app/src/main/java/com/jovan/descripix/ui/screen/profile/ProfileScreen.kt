@@ -119,7 +119,7 @@ fun ProfileScreen(
         is UiState.Loading -> {
             Box(
                 contentAlignment = Alignment.Center,
-                modifier = modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize()
             ) {
                 CircularProgressIndicator()
             }
@@ -146,7 +146,7 @@ fun ProfileScreen(
                         )
                     }
                 }
-                AutenticatedDisplay(modifier = modifier)
+                AutenticatedDisplay()
             } else {
                 GuestDisplay()
             }
@@ -204,7 +204,7 @@ fun GuestDisplay(
                         start.linkTo(parent.start)
                         end.linkTo(parent.end)
                     }
-                    .height(128.dp)
+                    .height(96.dp)
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.primary)
             )
@@ -520,7 +520,7 @@ fun AutenticatedDisplay(
                                 start.linkTo(parent.start)
                                 end.linkTo(parent.end)
                             }
-                            .height(128.dp)
+                            .height(96.dp)
                             .fillMaxWidth()
                             .background(MaterialTheme.colorScheme.primary)
                     )
@@ -997,7 +997,7 @@ fun EditProfile(
             .fillMaxWidth()
             .padding(8.dp)
             .testTag(TestTags.EDIT_PROFILE_MODAL),
-        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.primaryContainer),
+        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surface),
     ) {
         ConstraintLayout(
             modifier
@@ -1009,7 +1009,7 @@ fun EditProfile(
             Text(
                 text = stringResource(R.string.edit_profile),
                 style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.constrainAs(titleText) {
                     top.linkTo(parent.top)
                     start.linkTo(parent.start)
@@ -1059,13 +1059,13 @@ fun EditProfile(
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = showGenderMenu)
                     },
                     modifier = Modifier
+                        .menuAnchor()
                         .fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
                         unfocusedBorderColor = MaterialTheme.colorScheme.outline
                     )
                 )
-
                 ExposedDropdownMenu(
                     expanded = showGenderMenu,
                     onDismissRequest = { showGenderMenu = false }
@@ -1133,8 +1133,8 @@ fun EditProfile(
                         .weight(1f),
                     enabled = isButtonAcivated,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondary,
-                        contentColor = MaterialTheme.colorScheme.onSecondary
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 ) {
                     Text(stringResource(R.string.cancel))

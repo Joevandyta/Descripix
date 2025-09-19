@@ -55,5 +55,9 @@
     <string name="image_metadata">Metadata Gambar</string>
     <string name="location">Lokasi</string>
     <string name="device">Perangkat</string>
+    <string name="share">Bagikan</string>
+    <string name="saved">Disimpan</string>
+    <string name="save">Simpan</string>
+    <string name="save_caption">Simpan Caption</string>
 
 </resources>

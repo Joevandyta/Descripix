@@ -2,6 +2,7 @@ package com.jovan.descripix.ui.screen.home
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
@@ -140,6 +141,7 @@ class GuestScreenTest {
         mockWebServer.dispatcher = dispatcher
 
         composeRule.onNodeWithTag(TestTags.SIGN_IN_BUTTON).performClick()
+        composeRule.onNodeWithTag(TestTags.FLOATING_TOOLBAR_SAVE).assertIsNotDisplayed()
         composeRule.onNodeWithTag(TestTags.HOME_AUTH_SCREEN).assertExists()
     }
 }

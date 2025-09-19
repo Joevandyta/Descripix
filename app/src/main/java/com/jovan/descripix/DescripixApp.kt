@@ -6,22 +6,34 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -39,6 +51,7 @@ import com.jovan.descripix.ui.screen.home.HomeScreen
 import com.jovan.descripix.ui.screen.profile.ProfileScreen
 import com.jovan.descripix.ui.theme.DescripixTheme
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DescripixApp(
     modifier: Modifier = Modifier,
@@ -49,9 +62,18 @@ fun DescripixApp(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     val captionEntityState by viewModel.captionEntityState.collectAsStateWithLifecycle()
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     Scaffold(
-        modifier = modifier,
+        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        topBar = {
+            if (currentRoute != Screen.Upload.route) {
+                TopBar(
+                    currentRoute = currentRoute,
+                    navController = navController,
+                    scrollBehavior = scrollBehavior,)
+            }
+        },
         bottomBar = {
             if (currentRoute == Screen.Home.route || currentRoute == Screen.Profile.route) BottomBar(
                 navController
@@ -70,7 +92,8 @@ fun DescripixApp(
                     navigateToDetail = { captionEntity ->
                         viewModel.setCaptionEntity(captionEntity)
                         navController.navigate(Screen.DetailCaption.route)
-                    }
+                    },
+                    modifier = Modifier.padding(innerPadding)
                 )
             }
             composable(Screen.Upload.route) {
@@ -125,7 +148,7 @@ fun DescripixApp(
                 }
             }
             composable(Screen.Profile.route) {
-                ProfileScreen()
+                ProfileScreen(modifier = Modifier.padding(innerPadding))
             }
             composable(Screen.DetailCaption.route) {
 
@@ -135,7 +158,8 @@ fun DescripixApp(
                         onBack = {
                             navController.popBackStack()
                             viewModel.clearCaptionEntity()
-                        }
+                        },
+                        modifier = Modifier.padding(innerPadding)
                     )
                 }
             }
@@ -143,6 +167,53 @@ fun DescripixApp(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TopBar(
+    currentRoute: String?,
+    navController: NavHostController,
+    scrollBehavior: TopAppBarScrollBehavior
+) {
+    val topBarColor = when (currentRoute) {
+        Screen.Home.route -> MaterialTheme.colorScheme.primaryContainer
+        Screen.Profile.route -> MaterialTheme.colorScheme.primary
+
+        else -> MaterialTheme.colorScheme.surface
+    }
+    val topBarTextColor = when (currentRoute) {
+        Screen.Home.route -> MaterialTheme.colorScheme.onPrimaryContainer
+        Screen.Profile.route -> MaterialTheme.colorScheme.onPrimary
+        else -> MaterialTheme.colorScheme.onSurface
+    }
+    CenterAlignedTopAppBar(
+        modifier = Modifier.padding(0.dp),
+        title = {
+            Text(
+                text = when (currentRoute) {
+                    Screen.Home.route -> stringResource(R.string.menu_home)
+                    Screen.Profile.route -> stringResource(R.string.menu_profile)
+                    Screen.DetailCaption.route -> stringResource(R.string.menu_detail)
+                    else -> ""
+                }
+
+            )
+        },
+        navigationIcon = {
+            if (currentRoute == Screen.DetailCaption.route) {
+                IconButton(onClick = { navController.popBackStack() }) {
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                }
+            }
+        },
+        scrollBehavior = scrollBehavior,
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = topBarColor,
+            titleContentColor = topBarTextColor,
+            navigationIconContentColor = topBarTextColor,
+            scrolledContainerColor = MaterialTheme.colorScheme.background
+        )
+    )
+}
 @Composable
 fun BottomBar(
     navController: NavHostController,

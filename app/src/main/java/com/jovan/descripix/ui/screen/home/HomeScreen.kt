@@ -98,7 +98,6 @@ fun HomeScreen(
                 )
             } else {
                 GuestScreen(
-                    modifier = modifier,
                     onLoginClicked = {
                         viewModel.login(context)
                     }
