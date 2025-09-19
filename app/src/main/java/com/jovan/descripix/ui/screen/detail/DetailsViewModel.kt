@@ -1,18 +1,20 @@
 package com.jovan.descripix.ui.screen.detail
 
+import android.app.LocaleManager
 import android.content.Context
 import android.content.Intent
 import android.location.Address
 import android.location.Geocoder
 import android.net.Uri
 import android.os.Build
-import android.util.Log
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.drew.imaging.ImageMetadataReader
 import com.drew.metadata.exif.ExifIFD0Directory
 import com.drew.metadata.exif.ExifSubIFDDirectory
 import com.drew.metadata.exif.GpsDirectory
+import com.jovan.descripix.BuildConfig
 import com.jovan.descripix.R
 import com.jovan.descripix.data.source.local.datastore.SessionData
 import com.jovan.descripix.data.source.local.entity.CaptionEntity
@@ -36,6 +38,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -50,6 +53,7 @@ class DetailsViewModel @Inject constructor(
     private val service: IService,
     private val descripixUseCase: DescripixUseCase,
 ) : ViewModel() {
+
 
     val isConnected = descripixUseCase
         .isConnected()
@@ -87,20 +91,14 @@ class DetailsViewModel @Inject constructor(
 
     fun requestPickImage(context: Context) {
         viewModelScope.launch {
-            Log.d("DetailsViewModel", "isTestMode: ${service.isTestMode}")
             if (service.isTestMode) {
-                // Kalau test mode → langsung kirim mock URI
-                Log.d("DetailsViewModel", "Fake Run")
                 val fakeUri = service.testImagedUrl()
                 extractImageMetadata(context, fakeUri)
             } else {
-                // Kalau normal → suruh UI buka picker
-                Log.d("DetailsViewModel", "Normal Run")
                 _openImagePicker.emit(Unit)
             }
         }
     }
-
     private val _captionEntity = MutableStateFlow<CaptionEntity?>(null)
     val captionEntityState = _captionEntity.asStateFlow()
 
@@ -110,16 +108,13 @@ class DetailsViewModel @Inject constructor(
             _captionEntity.value = captionEntity
         }
     }
-
     private suspend fun internalExtractMetadata(context: Context, uri: Uri): CaptionEntity {
         val contentResolver = context.contentResolver
-
         var date: Date? = null
         var geoLocation: String? = null
         var device: String? = null
         var model: String? = null
         var author: String? = null
-
         try {
             contentResolver.openInputStream(uri)?.use { inputStream ->
                 val metadata = ImageMetadataReader.readMetadata(inputStream)
@@ -140,11 +135,8 @@ class DetailsViewModel @Inject constructor(
                 author = ifd0Directory?.getString(ExifIFD0Directory.TAG_ARTIST)
             }
         } catch (e: Exception) {
-            Log.e("ImageMetadata", context.getString(R.string.error_reading_metadata), e)
         }
-
         val dateFormatted = date?.let { dateFormater(it) }
-
         return CaptionEntity(
             id = -1,
             caption = null,
@@ -156,8 +148,6 @@ class DetailsViewModel @Inject constructor(
             image = uri.toString()
         )
     }
-
-
     @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun reverseGeocode(context: Context, lat: Double, lon: Double): String? {
         val geocoder = Geocoder(context, Locale.getDefault())
@@ -201,17 +191,14 @@ class DetailsViewModel @Inject constructor(
 
     fun login(context: Context) {
         _loginState.value = UiState.Loading
-        Log.d("HomeViewModel - login", "Run")
         viewModelScope.launch {
             try {
                 val idToken = service.getGoogleIdToken(context)
                 val loginResult = descripixUseCase.login(idToken, context)
                 _loginState.value = UiState.Success(loginResult)
-                Log.d("HomeViewModel - login", "Success")
 
             } catch (e: Exception) {
                 _loginState.value = UiState.Error(e.message ?: "Unknown error")
-                Log.e("HomeViewModel - login", "Error")
             }
         }
     }
@@ -228,13 +215,13 @@ class DetailsViewModel @Inject constructor(
         device: String,
         model: String,
         image: Uri,
+        token: String,
         context: Context
     ) {
         _generatedCaption.value = UiState.Loading
 
-        Log.d("DetailsViewModel - generateCaption", "Run")
         viewModelScope.launch {
-            val languageCode = descripixUseCase.getLanguage().first().code
+            val languageCode = getLanguageCode(context)
             try {
                 val metadata = createMetadataJson(
                     author = author,
@@ -244,17 +231,26 @@ class DetailsViewModel @Inject constructor(
                     model = model,
                     context = context
                 )
+                val finalToken =
+                    if(token.isBlank()) BuildConfig.GUEST_USER_TOKEN
+                    else token
 
-                val result = descripixUseCase.generateCaption(languageCode, metadata, image, context)
-                Log.d("DetailsViewModel - generateCaption", "Result : $result")
-
+                val result = descripixUseCase.generateCaption(finalToken, languageCode, metadata, image, context)
                 _generatedCaption.value = UiState.Success(result)
 
             } catch (e: Exception) {
                 _generatedCaption.value = UiState.Error(e.message ?: context.getString(R.string.unknown_error))
-                Log.d("DetailsViewModel - generateCaption", "Error : ${_generatedCaption.value}")
-
             }
+        }
+    }
+
+    private fun getLanguageCode(context: Context): String {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            context.getSystemService(LocaleManager::class.java).applicationLocales[0]?.toLanguageTag()
+                ?.split("-")?.first() ?: Language.English.code
+        } else {
+            AppCompatDelegate.getApplicationLocales()[0]?.toLanguageTag()?.split("-")?.first()
+                ?: Language.English.code
         }
     }
 
@@ -330,11 +326,8 @@ class DetailsViewModel @Inject constructor(
                 )
                 val result = descripixUseCase.saveCaption(captionRequest, token, context)
                 _saveCaption.value = UiState.Success(result)
-                Log.d("DetailsViewModel - saveCaption", "Success : $result")
             }catch (e: Exception) {
-
                 _saveCaption.value = UiState.Error(e.message ?: context.getString(R.string.unknown_error))
-                Log.d("DetailsViewModel - saveCaption", "Error : $e")
             }
         }
     }

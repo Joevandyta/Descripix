@@ -44,16 +44,16 @@ class UserPreference @Inject constructor(private val dataStore: DataStore<Prefer
         }
     }
 
-    suspend fun saveLanguage(language: Language) {
-        dataStore.edit { preferences ->
-            preferences[LANGUAGE_CODE_KEY] = language.code
-        }
-    }
-
-    fun getLanguage(): Flow<Language> {
-        return dataStore.data.map { preferences ->
-            val languageCode = preferences[LANGUAGE_CODE_KEY] ?: "en"
-            Language.fromCode(languageCode)
-        }
-    }
+//    suspend fun saveLanguage(language: Language) {
+//        dataStore.edit { preferences ->
+//            preferences[LANGUAGE_CODE_KEY] = language.code
+//        }
+//    }
+//
+//    fun getLanguage(): Flow<Language> {
+//        return dataStore.data.map { preferences ->
+//            val languageCode = preferences[LANGUAGE_CODE_KEY] ?: "en"
+//            Language.fromCode(languageCode)
+//        }
+//    }
 }

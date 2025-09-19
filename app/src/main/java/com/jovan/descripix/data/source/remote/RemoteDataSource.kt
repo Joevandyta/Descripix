@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import android.util.Log
 import androidx.core.net.toUri
+import com.jovan.descripix.BuildConfig
 import com.jovan.descripix.data.source.remote.network.ApiService
 import com.jovan.descripix.R
 import com.jovan.descripix.data.source.remote.request.CaptionRequest
@@ -142,7 +143,6 @@ class RemoteDataSource @Inject constructor(
                 imageFile.name,
                 requestImageFile
             )
-
         } catch (e: Exception) {
             val imageFile = withContext(Dispatchers.IO) {
                 ImageConverter.downloadImageToFile(context, imageUri)?.reduceFileSize()?.resizeIfTooLarge()
@@ -175,13 +175,6 @@ class RemoteDataSource @Inject constructor(
         }
     }
 
-    override suspend fun deleteCaption(
-        id: Int,
-        token: String,
-        context: Context
-    ): ApiResponse<Unit> =
-        handleApiException { apiService.deleteCaption(id, token = context.getString(R.string.bearer, token)) }
-
     override suspend fun editCaption(
         id: Int,
         captionRequest: CaptionRequest,
@@ -209,6 +202,13 @@ class RemoteDataSource @Inject constructor(
         }
     }
 
+    override suspend fun deleteCaption(
+        id: Int,
+        token: String,
+        context: Context
+    ): ApiResponse<Unit> =
+        handleApiException { apiService.deleteCaption(id, token = context.getString(R.string.bearer, token)) }
+
     override suspend fun getCaptionDetails(
         id: Int,
         token: String,
@@ -217,21 +217,17 @@ class RemoteDataSource @Inject constructor(
         handleApiException { apiService.getCaptionDetails(id, token = context.getString(R.string.bearer, token)) }
 
     override suspend fun generateCaption(
+        token : String,
         languageCode: String,
         metadata: JSONObject,
         image: Uri,
         context: Context
     ): ApiResponse<GenerateResponse> {
-        Log.d("Repository-generateCaption", "image :$image")
-
         val metadataBody =
             metadata.toString().toRequestBody("application/json".toMediaTypeOrNull())
 
         val finalFile: File? = when {
-            // 1️⃣ Kalau dari API (URL HTTP/HTTPS) → download
             image.scheme == "http" || image.scheme == "https" -> {
-                Log.d("Repository-generateCaption", " HTTP Run")
-
                 withContext(Dispatchers.IO) {
                     ImageConverter.downloadImageToFile(context, image.toString())
                         ?.resizeIfTooLarge()
@@ -240,8 +236,6 @@ class RemoteDataSource @Inject constructor(
             }
 
             image.scheme == "content" || image.scheme == "file" || image.scheme == "android.resource"-> {
-                Log.d("Repository-generateCaption", " File Run")
-
                 withContext(Dispatchers.IO) {
                     ImageConverter.uriToFile(image, context)
                         .reduceFileSize()
@@ -260,55 +254,10 @@ class RemoteDataSource @Inject constructor(
             apiService.generateCaption(
                 languageCode = languageCode.toRequestBody(),
                 metadata = metadataBody,
-                image = multipartBody
+                image = multipartBody,
+                token = context.getString(R.string.bearer, token)
             )
         }
-
-//        try {
-//            Log.d("Repository-generateCaption", " Try Run")
-//
-//            val imageFile = withContext(Dispatchers.IO) {
-//                ImageConverter.uriToFile(image, context).reduceFileSize().resizeIfTooLarge()
-//            }
-//            val requestImageFile = imageFile.asRequestBody("image/jpeg".toMediaType())
-//            val multipartBody = MultipartBody.Part.createFormData(
-//                "image",
-//                imageFile.name,
-//                requestImageFile
-//            )
-//            return handleApiException {
-//                Log.d("Repository-generateCaption", " handleApiException Run")
-//                apiService.generateCaption(
-//                    languageCode = languageCode.toRequestBody(),
-//                    metadata = metadataBody,
-//                    image = multipartBody,
-//                )
-//            }
-//        }
-//        catch (e: Exception) {
-//            Log.d("Repository-generateCaption", " Catch Run")
-//
-//            val imageFile = withContext(Dispatchers.IO) {
-//                ImageConverter.downloadImageToFile(context, image.toString())?.resizeIfTooLarge()
-//                    ?.reduceFileSize()
-//            }
-//            imageFile?.let {
-//                val requestImage = it.asRequestBody("image/jpeg".toMediaTypeOrNull())
-//                val multipartBody = MultipartBody.Part.createFormData(
-//                    "image",
-//                    it.name,
-//                    requestImage
-//                )
-//                return handleApiException {
-//                    apiService.generateCaption(
-//                        languageCode = languageCode.toRequestBody(),
-//                        metadata = metadataBody,
-//                        image = multipartBody
-//                    )
-//                }
-//            }
-//            return ApiResponse(false, context.getString(R.string.failed_to_load_image), null)
-//        }
     }
     override suspend fun getCaptionList(
         token: String,

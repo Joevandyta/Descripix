@@ -2,7 +2,7 @@ package com.jovan.descripix.data
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
+import com.jovan.descripix.R
 import com.jovan.descripix.data.source.local.LocalDataSource
 import com.jovan.descripix.data.source.local.datastore.SessionData
 import com.jovan.descripix.data.source.local.entity.CaptionEntity
@@ -15,7 +15,6 @@ import com.jovan.descripix.data.source.remote.response.CaptionDataResponse
 import com.jovan.descripix.data.source.remote.response.GenerateResponse
 import com.jovan.descripix.data.source.remote.response.LoginResponse
 import com.jovan.descripix.domain.repository.IDescripixRepository
-import com.jovan.descripix.ui.common.Language
 import com.jovan.descripix.utils.ImageConverter
 import com.jovan.descripix.utils.handleApiException
 import com.jovan.descripix.utils.reduceFileSize
@@ -37,25 +36,24 @@ import javax.inject.Singleton
 class DescripixRepository @Inject constructor(
     private val localDataSource: LocalDataSource,
     private val remoteDataSource: RemoteDataSource,
-) : IDescripixRepository {
+    ) : IDescripixRepository {
+
 
     //LocalDataSource
     override fun getSession(context: Context, isConnected: Boolean): Flow<SessionData> =
         localDataSource.getSession().map { session ->
             wrapEspressoIdlingResource {
-                Log.d("getSession", "Run")
                 var currentSession = session
                 if (currentSession.token.isBlank() || currentSession.refreshToken.isBlank()) {
                     localDataSource.logout()
                     return@map currentSession
                 }
-                Log.d("repository-getSession", "isConnected : $isConnected")
                 if (isConnected) {
                     try {
                         val tokenVerify =
                             handleApiException { remoteDataSource.tokenVerify(currentSession.token) }
                         if (!tokenVerify.status && !tokenVerify.message.toString()
-                                .contains("Connection Timeout")
+                                .contains(context.getString(R.string.connection_timeout))
                         ) {
                             val refreshed =
                                 handleApiException { remoteDataSource.refreshToken(currentSession.refreshToken) }
@@ -71,8 +69,7 @@ class DescripixRepository @Inject constructor(
                                 localDataSource.deleteUser()
                             }
                         }
-                    } catch (e: Exception) {
-                        Log.e("REPO", e.message.toString())
+                    } catch (_: Exception) {
                     }
                 }
                 currentSession
@@ -92,18 +89,6 @@ class DescripixRepository @Inject constructor(
             localDataSource.deleteAllCaption()
             localDataSource.logout()
             return response
-        }
-    }
-
-    override suspend fun saveLanguage(language: Language) {
-        wrapEspressoIdlingResource {
-            return localDataSource.saveLanguage(language)
-        }
-    }
-
-    override fun getLanguage(): Flow<Language> {
-        wrapEspressoIdlingResource {
-            return localDataSource.getLanguage()
         }
     }
 
@@ -138,13 +123,11 @@ class DescripixRepository @Inject constructor(
     ): Flow<List<CaptionEntity>> = flow {
         wrapEspressoIdlingResource {
             var currentCaption = localDataSource.getAllCaption().first()
-            Log.d("Repository-GetAllCaption", "isConected : $isConnected")
             if (isConnected) {
                 try {
                     val apiResponse = remoteDataSource.getCaptionList(token, context)
                     if (apiResponse.status) {
                         val captionsFromServer = apiResponse.data
-                        Log.d("Repository-GetCaptionList", captionsFromServer.toString())
                         try {
                             val entities = mutableListOf<CaptionEntity>()
                             captionsFromServer?.forEach { serverCaption ->
@@ -176,12 +159,11 @@ class DescripixRepository @Inject constructor(
                             }
                             currentCaption = entities
 
-                        } catch (e: Exception) {
+                        } catch (_: Exception) {
                             // Keep currentCaption as is (local data)
                         }
                     }
-                } catch (e: Exception) {
-                    // Keep currentCaption as is (local data)
+                } catch (_: Exception) {
                 }
                 val localCaptionBeforeProcessing = localDataSource.getAllCaption().first()
                 if (currentCaption != localCaptionBeforeProcessing) {
@@ -189,7 +171,7 @@ class DescripixRepository @Inject constructor(
                         localDataSource.deleteAllCaption()
                         localDataSource.insertCaption(currentCaption)
                         emit(localDataSource.getAllCaption().first())
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
                         emit(currentCaption)
                     }
                 } else {
@@ -283,13 +265,14 @@ class DescripixRepository @Inject constructor(
     }
 
     override suspend fun generateCaption(
+        token: String,
         languageCode: String,
         metadata: JSONObject,
         image: Uri,
         context: Context
     ): ApiResponse<GenerateResponse> {
         wrapEspressoIdlingResource {
-            return remoteDataSource.generateCaption(languageCode, metadata, image, context)
+            return remoteDataSource.generateCaption(token, languageCode, metadata, image, context)
         }
     }
 

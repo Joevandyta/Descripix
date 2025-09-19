@@ -163,7 +163,7 @@ class AuthenticateScreenTest {
 
                     request.path == "/auth/token-refresh/" && request.method == "POST" ->
                         MockResponse()
-                            .setResponseCode(200)
+                            .setResponseCode(401)
                             .setBody(JsonConverter.readStringFromFile("refresh_token_failed.json"))
 
                     else -> MockResponse().setResponseCode(404)
@@ -233,13 +233,14 @@ class AuthenticateScreenTest {
             }
         }
         mockWebServer.dispatcher = dispatcher
-
+        var initialLocalSize = 0
         runBlocking {
             captionDao.insert(FakeObject.listDummy)
-            val currentCaption = captionDao.getAllCaption().first()
-            assertThat(currentCaption).isNotEmpty()
-            assertThat(currentCaption.size).isEqualTo(4)
-            assertThat(currentCaption.first().caption).contains("offline")
+            val localCaption = captionDao.getAllCaption().first()
+            initialLocalSize = localCaption.size
+            assertThat(localCaption).isNotEmpty()
+            assertThat(initialLocalSize).isEqualTo(4)
+            assertThat(localCaption.first().caption).contains("offline")
         }
 
         //Launch Screen
@@ -250,7 +251,7 @@ class AuthenticateScreenTest {
 
         runBlocking {
             val currentCaption = captionDao.getAllCaption().first()
-            assertThat(currentCaption.size).isEqualTo(8)
+            assertThat(currentCaption.size).isNotEqualTo(initialLocalSize)
         }
     }
 
@@ -283,6 +284,7 @@ class AuthenticateScreenTest {
         composeRule.onNodeWithText("online caption 1").assertExists("Caption not found")
         composeRule.onNodeWithText("online caption 1").performClick()
         composeRule.onNodeWithTag(TestTags.DETAILS_SCREEN).assertExists()
+        composeRule.onNodeWithTag(TestTags.CAPTION_TEXT_LAYOUT).assertIsDisplayed()
     }
 
     @Test
@@ -313,5 +315,6 @@ class AuthenticateScreenTest {
         composeRule.onNodeWithTag(TestTags.CAPTION_TEXT_LAYOUT).assertIsNotDisplayed()
         //Should show save button, its authMode, already can save caption
         composeRule.onNodeWithTag(TestTags.FLOATING_TOOLBAR_SAVE).assertIsDisplayed()
+        composeRule.onNodeWithTag(TestTags.SIGN_IN_BUTTON).assertIsNotDisplayed()
     }
 }

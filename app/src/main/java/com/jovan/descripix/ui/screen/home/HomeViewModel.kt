@@ -1,7 +1,6 @@
 package com.jovan.descripix.ui.screen.home
 
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jovan.descripix.R
@@ -29,6 +28,7 @@ class HomeViewModel @Inject constructor(
     private val descripixUseCase: DescripixUseCase
 ) :
     ViewModel() {
+
 
     val isConnected = descripixUseCase
         .isConnected()
@@ -68,17 +68,14 @@ class HomeViewModel @Inject constructor(
 
     fun login(context: Context) {
         _loginState.value = UiState.Loading
-        Log.d("HomeViewModel - login", "Run")
         viewModelScope.launch {
             try {
                 val idToken = credentialService.getGoogleIdToken(context)
                 val loginResult = descripixUseCase.login(idToken, context)
                 _loginState.value = UiState.Success(loginResult)
-                Log.d("HomeViewModel - login", "Success")
 
             } catch (e: Exception) {
                 _loginState.value = UiState.Error(e.message ?: "Unknown error")
-                Log.e("HomeViewModel - login", "Error")
 
             }
 
@@ -92,17 +89,13 @@ class HomeViewModel @Inject constructor(
 
     fun getAllCaptions(connected: Boolean, token: String, context: Context) {
         _captionListState.value = UiState.Loading
-        Log.e("HomeViewModel - getAllCaptions", "Run")
         viewModelScope.launch {
             descripixUseCase.getAllCaptions(connected, token, context)
                 .distinctUntilChanged()
                 .catch { e ->
                     _captionListState.value = UiState.Error(e.message ?: context.getString(R.string.unknown_error))
-                    Log.e("UiState.Error", "${e.message}")
                 }
                 .collect { data ->
-                    Log.e("HomeViewModel - getAllCaptions", "${data.size}")
-
                     _captionListState.value = UiState.Success(data)
                 }
         }

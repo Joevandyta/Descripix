@@ -110,6 +110,7 @@ interface ApiService {
         @Part("metadata") metadata: RequestBody,
         @Part("language_code") languageCode: RequestBody,
         @Part image: MultipartBody.Part,
+        @Header("Authorization") token: String
     ): ApiResponse<GenerateResponse>
 
     //Caption List

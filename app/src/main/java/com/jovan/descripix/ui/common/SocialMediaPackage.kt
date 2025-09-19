@@ -6,4 +6,4 @@ object SocialMediaPackage {
     const val FACEBOOK = "com.facebook.katana"
     const val THREADS = "com.instagram.barcelona"
     const val X = "com.twitter.android"
-}
+} 

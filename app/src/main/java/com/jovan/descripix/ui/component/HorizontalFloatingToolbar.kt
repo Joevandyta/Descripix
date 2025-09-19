@@ -37,8 +37,8 @@ fun FloatingToolbar(
     toogleSaveActive: Boolean,
     isToogleSaveEnabled: Boolean,
     onSaveClicked: () -> Unit = {},
-    isLogin: Boolean,
-    onLoginClicked: () -> Unit = {}
+//    isLogin: Boolean,
+//    onLoginClicked: () -> Unit = {}
 ) {
 
 
@@ -49,7 +49,7 @@ fun FloatingToolbar(
     ) {
         Card(
             shape = RoundedCornerShape(48.dp),
-            colors = CardDefaults.cardColors(MaterialTheme.colorScheme.secondaryContainer),
+            colors = CardDefaults.cardColors(MaterialTheme.colorScheme.tertiaryContainer),
             elevation = CardDefaults.cardElevation(
                 defaultElevation = 4.dp,
             )
@@ -57,7 +57,7 @@ fun FloatingToolbar(
             Row(
                 Modifier.padding(8.dp)
             ) {
-                if (isLogin) {
+//                if (isLogin) {
 
                     TextButton(
                         onClick = {
@@ -71,7 +71,7 @@ fun FloatingToolbar(
                             verticalArrangement = Arrangement.Center
                         ) {
                             Icon(
-                                tint = if(isToogleSaveEnabled) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.4f),
+                                tint = if(isToogleSaveEnabled) MaterialTheme.colorScheme.onTertiaryContainer else MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.4f),
                                 painter = painterResource(
                                     if (toogleSaveActive) {
                                         R.drawable.ic_bookmark_added
@@ -85,31 +85,10 @@ fun FloatingToolbar(
                                 text = if (toogleSaveActive) stringResource(R.string.saved) else stringResource(
                                     R.string.save
                                 ),
-                                color = if(isToogleSaveEnabled) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.4f)
+                                color = if(isToogleSaveEnabled) MaterialTheme.colorScheme.onTertiaryContainer else MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.4f)
                             )
                         }
                     }
-                } else {
-                    TextButton(
-                        onClick = onLoginClicked,
-                        enabled = true,
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
-                        ) {
-                            Icon(
-                                tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                                painter = painterResource(R.drawable.ic_login),
-                                contentDescription = stringResource(R.string.sign_in_button),
-                                )
-                            Text(
-                                text = stringResource(R.string.sign_in),
-                                color = MaterialTheme.colorScheme.onSecondaryContainer
-                            )
-                        }
-                    }
-                }
                 TextButton(
                     onClick = onGenerateClicked,
                     enabled = isGenerateButtonActive,
@@ -119,13 +98,13 @@ fun FloatingToolbar(
                         verticalArrangement = Arrangement.Center
                     ) {
                         Icon(
-                            tint = if(isGenerateButtonActive) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.4f),
+                            tint = if(isGenerateButtonActive) MaterialTheme.colorScheme.onTertiaryContainer else MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.4f),
                             painter = painterResource(R.drawable.ic_rocket),
                             contentDescription = stringResource(R.string.generate_caption)
                         )
                         Text(
                             text = stringResource(R.string.generate),
-                            color = if(isGenerateButtonActive) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.4f)
+                            color = if(isGenerateButtonActive) MaterialTheme.colorScheme.onTertiaryContainer else MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.4f)
                         )
                     }
 
@@ -142,20 +121,20 @@ fun FloatingToolbar(
             elevation = ButtonDefaults.buttonElevation(
                 defaultElevation = 4.dp,
             ),
-            colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.tertiaryContainer)
+            colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondaryContainer)
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
                 Icon(
-                    tint = MaterialTheme.colorScheme.onTertiaryContainer,
+                    tint = MaterialTheme.colorScheme.onSecondaryContainer,
                     painter = painterResource(R.drawable.ic_share),
                     contentDescription = stringResource(R.string.share_button),
                 )
                 Text(
                     text = stringResource(R.string.share),
-                    color = MaterialTheme.colorScheme.onTertiaryContainer,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
                 )
             }
         }
@@ -172,8 +151,8 @@ fun PreviewHorizontal() {
         onGenerateClicked ={},
         toogleSaveActive = false,
         onSaveClicked = {},
-        isLogin = false,
-        onLoginClicked = {},
+//        isLogin = false,
+//        onLoginClicked = {},
             isToogleSaveEnabled = true,
             isGenerateButtonActive = true
         )

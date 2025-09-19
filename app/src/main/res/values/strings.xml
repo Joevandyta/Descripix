@@ -9,6 +9,7 @@
     <string name="menu_profile" translatable="false">Profile</string>
     <string name="menu_home" translatable="false">Home</string>
     <string name="menu_upload" translatable="false">Upload</string>
+    <string name="menu_detail" translatable="false">Detail Caption</string>
     <string name="about_app">About App</string>
     <string name="oke">Oke</string>
     <string name="client_id" translatable="false">860627407571-qnci3hh5k9vq20m50s2dq3sb4jmof9fv.apps.googleusercontent.com</string>
@@ -78,7 +79,8 @@
     <string name="saved">Saved</string>
     <string name="save">Save</string>
     <string name="save_caption">Save Caption</string>
-    <string name="generate_caption">Generate Caption</string>
+    <string name="generate_caption" translatable="false">Generate Caption</string>
     <string name="share">Share</string>
+    <string name="connection_timeout" translatable="false">Connection Timeout</string>
 
 </resources>

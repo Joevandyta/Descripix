@@ -28,14 +28,6 @@ class LocalDataSource @Inject constructor(private val userPreference: UserPrefer
         userPreference.logout()
     }
 
-    override suspend fun saveLanguage(language: Language) {
-        return userPreference.saveLanguage(language)
-    }
-
-    override fun getLanguage(): Flow<Language> {
-        return userPreference.getLanguage().distinctUntilChanged()
-    }
-
     override suspend fun insertCaption(captionEntity: List<CaptionEntity>) {
         describitDao.insert(captionEntity)
     }
