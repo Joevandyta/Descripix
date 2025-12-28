@@ -18,7 +18,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
@@ -42,7 +44,7 @@ class MainActivity : AppCompatActivity() {
             DescripixTheme {
                 if (isLoading) {
                     SplashScreen()
-                }else{
+                } else {
                     Surface {
                         DescripixApp()
                     }
@@ -55,8 +57,10 @@ class MainActivity : AppCompatActivity() {
 @Composable
 fun SplashScreen() {
     val scale = remember { Animatable(0f) }
+    var showLogo by remember { mutableStateOf(true) }
 
-    LaunchedEffect (Unit) {
+
+    LaunchedEffect(Unit) {
         scale.animateTo(
             targetValue = 1f,
             animationSpec = tween(1000, easing = EaseOutBack)
@@ -69,11 +73,11 @@ fun SplashScreen() {
         contentAlignment = Alignment.Center
     ) {
         Image(
-            painter = painterResource(id = R.drawable.descripix_logo),
+            painter = painterResource(id = R.drawable.descripix_text_color_low),
             contentDescription = stringResource(R.string.descripix_logo),
             modifier = Modifier
                 .scale(scale.value)
-                .size(200.dp)
+                .size(250.dp)
         )
     }
 }

@@ -26,11 +26,5 @@ data class CaptionEntity(
     val model: String? = null,
     @ColumnInfo(name = "image")
     val image: String,
-
-
-
-
-
-
 ): Parcelable
 

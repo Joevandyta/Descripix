@@ -1,10 +1,7 @@
 package com.jovan.descripix
 
 import com.jovan.descripix.data.source.local.entity.CaptionEntity
-import com.jovan.descripix.data.source.remote.response.ListCaptionResponse
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.flowOf
 
 object FakeObject {
     var testIdToken: String = "test_id_token"

@@ -4,6 +4,7 @@ core = "1.6.1"
 coreTesting = "2.2.0"
 appcompat = "1.7.1"
 constraintlayoutCompose = "1.1.1"
+espressoIntents = "3.7.0"
 hiltNavigationCompose = "1.2.0"
 hilt = "2.55" #2.52
 kotlin = "2.1.0"
@@ -47,6 +48,7 @@ espressoIdlingResource = "3.4.0"
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 androidx-constraintlayout-compose = { module = "androidx.constraintlayout:constraintlayout-compose", version.ref = "constraintlayoutCompose" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-espresso-intents = { module = "androidx.test.espresso:espresso-intents", version.ref = "espressoIntents" }
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }

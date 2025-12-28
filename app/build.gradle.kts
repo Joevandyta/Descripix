@@ -144,6 +144,7 @@ dependencies {
 
     //Integration test
     implementation(libs.androidx.espresso.idling.resource)
+    androidTestImplementation(libs.androidx.espresso.intents)
     implementation(libs.androidx.navigation.testing.android)
     androidTestImplementation(libs.junit)
     androidTestImplementation(libs.hilt.android.testing)

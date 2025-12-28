@@ -1,6 +1,5 @@
 package com.jovan.descripix.ui.component
 
-import android.util.Log
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -14,7 +13,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -39,9 +37,11 @@ fun ShareList(
             .padding(8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(contentColor = MaterialTheme.colorScheme.surface.copy(
-            alpha = 0.7f
-        ))
+        colors = CardDefaults.cardColors(
+            contentColor = MaterialTheme.colorScheme.surface.copy(
+                alpha = 0.7f
+            )
+        )
     ) {
         Row(
             modifier = Modifier
@@ -58,7 +58,7 @@ fun ShareList(
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_wa),
-                    contentDescription = "share to whatsapp",
+                    contentDescription = stringResource(R.string.share_to_whatsapp),
                     tint = Color.Unspecified,
                     modifier = Modifier
                         .fillMaxSize(0.75f)
@@ -71,11 +71,10 @@ fun ShareList(
                 enabled = true,
                 modifier = Modifier
                     .wrapContentWidth()
-
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_instagram),
-                    contentDescription = "share to Instagram",
+                    contentDescription = stringResource(R.string.share_to_instagram),
                     tint = Color.Unspecified,
                     modifier = Modifier
                         .fillMaxSize(0.75f)
@@ -130,8 +129,7 @@ fun ShareList(
             }
             //Share General
             IconButton(
-                onClick = onGeneralShare
-                ,
+                onClick = onGeneralShare,
                 enabled = true,
                 modifier = Modifier
                     .wrapContentWidth()

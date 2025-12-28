@@ -54,6 +54,7 @@ interface IRemoteDataSource {
         languageCode: String,
         metadata: JSONObject,
         image: Uri,
+        style: String,
         context: Context
     ): ApiResponse<GenerateResponse>
 

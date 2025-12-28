@@ -13,6 +13,7 @@
     <string name="about_app">About App</string>
     <string name="oke">Oke</string>
     <string name="client_id" translatable="false">860627407571-qnci3hh5k9vq20m50s2dq3sb4jmof9fv.apps.googleusercontent.com</string>
+
     <string name="unexpected_type_of_credential">Unexpected type of credential</string>
 
     <string name="unknown_error">Unknown error</string>y
@@ -82,5 +83,16 @@
     <string name="generate_caption" translatable="false">Generate Caption</string>
     <string name="share">Share</string>
     <string name="connection_timeout" translatable="false">Connection Timeout</string>
+    <string name="result_style">Style</string>
+    <string name="tap_to_add_or_modify_image_data">Tap to add or modify image data.</string>
+    <string name="tap_the_caption_text_to_make_changes">Tap the caption text to make changes.</string>
+    <string name="show_style" translatable="false">Show style</string>
+    <string name="hide_style" translatable="false">Hide style</string>
+    <string name="share_to_instagram">share to Instagram</string>
+    <string name="share_to_whatsapp">share to whatsapp</string>
+    <string name="image" translatable="false">image</string>
+    <string name="server_sibuk_silakan_coba_lagi">Server busy, please try again</string>
+    <string name="click_save_to_save_caption">Click save to save caption</string>
+    <string name="click_saved_to_delete_caption">Click button saved again to delete</string>
 
 </resources>

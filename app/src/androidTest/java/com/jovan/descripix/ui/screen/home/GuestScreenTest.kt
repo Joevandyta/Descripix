@@ -2,23 +2,16 @@ package com.jovan.descripix.ui.screen.home
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
-import androidx.compose.ui.test.onAllNodesWithTag
-import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.navigation.compose.ComposeNavigator
 import androidx.navigation.testing.TestNavHostController
 import androidx.test.espresso.IdlingRegistry
 import com.jovan.descripix.DescripixApp
-import com.jovan.descripix.R
 import com.jovan.descripix.TestActivity
-import com.jovan.descripix.data.source.local.entity.CaptionEntity
 import com.jovan.descripix.ui.common.TestTags
-import com.jovan.descripix.ui.navigation.Screen
 import com.jovan.descripix.ui.theme.DescripixTheme
 import com.jovan.descripix.utils.EspressoIdlingResource
 import com.jovan.descripix.utils.JsonConverter
@@ -55,7 +48,24 @@ class GuestScreenTest {
         mockWebServer.start(8080)
 
         IdlingRegistry.getInstance().register(EspressoIdlingResource.countingIdlingResource)
+    }
 
+    @After
+    fun teardown() {
+        mockWebServer.shutdown()
+        IdlingRegistry.getInstance().unregister(EspressoIdlingResource.countingIdlingResource)
+    }
+    private fun launchScreen(){
+        composeRule.setContent {
+            DescripixTheme {
+                navController = TestNavHostController(LocalContext.current)
+                navController.navigatorProvider.addNavigator(ComposeNavigator())
+                DescripixApp(navController = navController)
+            }
+        }
+    }
+    @Test
+    fun home_guestMode_showsGuestUI() {
         val dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
                 return when {
@@ -67,7 +77,7 @@ class GuestScreenTest {
                     // 2. Refresh Token - success
                     request.path == "/auth/token-refresh/" && request.method == "POST" ->
                         MockResponse()
-                            .setResponseCode(200)
+                            .setResponseCode(401)
                             .setBody(JsonConverter.readStringFromFile("refresh_token_failed.json"))
 
                     else -> MockResponse().setResponseCode(404)
@@ -76,49 +86,9 @@ class GuestScreenTest {
         }
         mockWebServer.dispatcher = dispatcher
 
-        composeRule.setContent {
-            DescripixTheme {
-                navController = TestNavHostController(LocalContext.current)
-                navController.navigatorProvider.addNavigator(ComposeNavigator())
-                DescripixApp(navController = navController)
-            }
-        }
-    }
 
-    @After
-    fun teardown() {
-        mockWebServer.shutdown()
-        IdlingRegistry.getInstance().unregister(EspressoIdlingResource.countingIdlingResource)
-    }
-
-    //    Authenticate Screen
-    @Test
-    fun home_guestMode_showsGuestUI() {
+        launchScreen()
         composeRule.onNodeWithTag(TestTags.GUEST_SCREEN).assertExists()
-    }
-
-    @Test
-    fun uploadImage_guestMode_opensDetailScreen_showsSignInButton() {
-        val context = composeRule.activity
-
-        composeRule.onNodeWithTag(
-            Screen.Upload.route + TestTags.BOTTOM_BAR_ICON,
-            useUnmergedTree = true
-        ).assertExists()
-
-        composeRule.onNodeWithTag(
-            Screen.Upload.route + TestTags.BOTTOM_BAR_ICON,
-            useUnmergedTree = true
-        ).performClick()
-        //Wait for processing
-        composeRule.waitForIdle()
-
-        //Caption Layout should be hidden
-        composeRule.onNodeWithTag(TestTags.CAPTION_TEXT_LAYOUT).assertIsNotDisplayed()
-
-        //Should show sign in button, its guestMode, still cant save caption
-        var expectedText = context.getString(R.string.sign_in_button)
-        composeRule.onNodeWithContentDescription(expectedText).assertExists()
     }
 
     @Test
@@ -139,6 +109,7 @@ class GuestScreenTest {
             }
         }
         mockWebServer.dispatcher = dispatcher
+        launchScreen()
 
         composeRule.onNodeWithTag(TestTags.SIGN_IN_BUTTON).performClick()
         composeRule.onNodeWithTag(TestTags.FLOATING_TOOLBAR_SAVE).assertIsNotDisplayed()

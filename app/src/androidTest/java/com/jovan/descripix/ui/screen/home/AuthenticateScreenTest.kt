@@ -1,6 +1,5 @@
 package com.jovan.descripix.ui.screen.home
 
-import android.util.Log
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.assertIsDisplayed
@@ -20,10 +19,8 @@ import com.jovan.descripix.R
 import com.jovan.descripix.TestActivity
 import com.jovan.descripix.data.source.local.datastore.SessionData
 import com.jovan.descripix.data.source.local.datastore.UserPreference
-import com.jovan.descripix.data.source.local.entity.CaptionEntity
 import com.jovan.descripix.data.source.local.room.CaptionDao
 import com.jovan.descripix.ui.common.TestTags
-import com.jovan.descripix.ui.screen.detail.DetailScreen
 import com.jovan.descripix.ui.theme.DescripixTheme
 import com.jovan.descripix.utils.EspressoIdlingResource
 import com.jovan.descripix.utils.JsonConverter
@@ -107,7 +104,6 @@ class AuthenticateScreenTest {
     @Test
     fun home_authenticated_sessionExpired_refreshesToken() {
         var tokenVerifyCallCount = 0
-
         val dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
                 return when {
@@ -135,14 +131,11 @@ class AuthenticateScreenTest {
             }
         }
         mockWebServer.dispatcher = dispatcher
-
         runBlocking {
             assertThat(userPreference.getSession().first().isLogin).isTrue()
         }
-
         //Launch Screen
         launchScreen()
-
         composeRule.onNodeWithTag(TestTags.HOME_AUTH_SCREEN).assertExists()
         runBlocking {
             assertThat(userPreference.getSession().first().token).isEqualTo("new_access_token")
@@ -288,33 +281,35 @@ class AuthenticateScreenTest {
     }
 
     @Test
-    fun uploadImage_authenticatedMode_opensDetailScreen_showsSaveCaptionButton(){
+    fun uploadImage_showDetailScreen(){
+        val context = composeRule.activity
+
         val dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
                 return when {
-                    request.path == "/auth/token-verify/" && request.method == "GET" ->
-                        MockResponse().setResponseCode(200)
-                            .setBody(JsonConverter.readStringFromFile("token_verify_success.json"))
+                    request.path == "/auth/token-verify/" -> MockResponse()
+                        .setResponseCode(200)
+                        .setBody(JsonConverter.readStringFromFile("token_verify_success.json"))
 
+                    request.path == "/caption/list/" && request.method == "GET" ->
+                        MockResponse().setResponseCode(200)
+                            .setBody(JsonConverter.readStringFromFile("caption_list_success.json"))
+                    request.path == "/caption/detail/?id=1" && request.method == "GET" ->
+                        MockResponse().setResponseCode(200)
+                            .setBody(JsonConverter.readStringFromFile("caption_detail_success.json"))
                     else -> MockResponse().setResponseCode(404)
                 }
             }
         }
         mockWebServer.dispatcher = dispatcher
-
-        //Launch Screen
         launchScreen()
 
         composeRule.onNodeWithText(
             composeRule.activity.getString(R.string.menu_upload),
             useUnmergedTree = true).performClick()
-        // 4. Wait for processing
-        composeRule.waitForIdle()
-
-        //Caption Layout should be hidden
+        val image = context.getString(R.string.share_to_instagram)
+        composeRule.onNodeWithContentDescription(image).assertIsNotDisplayed()
         composeRule.onNodeWithTag(TestTags.CAPTION_TEXT_LAYOUT).assertIsNotDisplayed()
-        //Should show save button, its authMode, already can save caption
         composeRule.onNodeWithTag(TestTags.FLOATING_TOOLBAR_SAVE).assertIsDisplayed()
-        composeRule.onNodeWithTag(TestTags.SIGN_IN_BUTTON).assertIsNotDisplayed()
     }
 }

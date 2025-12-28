@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -162,6 +163,10 @@ fun GuestDisplay(
     modifier: Modifier = Modifier,
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
+    var visible by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        visible = true
+    }
     val context = LocalContext.current
     val backgroundColor = MaterialTheme.colorScheme.background
     val primaryColor = MaterialTheme.colorScheme.primary
@@ -183,248 +188,257 @@ fun GuestDisplay(
                 }
         )
     }
-    Column(
-        modifier = modifier
-            .background(MaterialTheme.colorScheme.background)
-            .fillMaxWidth()
-            .testTag(TestTags.PROFILE_GUEST_SCREEN),
-        horizontalAlignment = Alignment.CenterHorizontally,
+    AnimatedVisibility(
+        visible = visible,
+        enter = fadeIn(animationSpec = tween(500)) + slideInVertically(
+            initialOffsetY = { fullHeight -> -fullHeight },
+            animationSpec = tween(500)
+        ),
+        exit = fadeOut()
     ) {
-        ConstraintLayout(
-            modifier = Modifier
+        Column(
+            modifier = modifier
+                .background(MaterialTheme.colorScheme.background)
                 .fillMaxWidth()
-                .wrapContentHeight()
+                .testTag(TestTags.PROFILE_GUEST_SCREEN),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            val (rectangle, circleLeft, rectLeft, rectRight, circleRight, layoutProfile) = createRefs()
+            ConstraintLayout(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+            ) {
+                val (rectangle, circleLeft, rectLeft, rectRight, circleRight, layoutProfile) = createRefs()
 
-            Box(
-                modifier = Modifier
-                    .constrainAs(rectangle) {
-                        top.linkTo(parent.top)
-                        start.linkTo(parent.start)
-                        end.linkTo(parent.end)
-                    }
-                    .height(96.dp)
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.primary)
-            )
-            Canvas(
-                modifier = Modifier
-                    .constrainAs(circleLeft) {
-                        top.linkTo(rectangle.bottom)
-                        bottom.linkTo(rectangle.bottom)
-                        start.linkTo(parent.start)
-                        end.linkTo(parent.end)
-                    }
-                    .fillMaxWidth()
-                    .height(42.dp)
-            ) {
-                drawArc(
-                    color = primaryColor,
-                    startAngle = 0f,
-                    sweepAngle = 180f,
-                    useCenter = false,
-                    size = Size(size.width, size.height),
-                    topLeft = Offset(0f, 0f),
-                    style = Fill
-                )
-            }
-            Canvas(
-                modifier = Modifier
-                    .constrainAs(rectRight) {
-                        top.linkTo(rectangle.bottom)
-                        start.linkTo(layoutProfile.end)
-                        end.linkTo(parent.end)
-                    }
-                    .fillMaxWidth()
-                    .height(42.dp)
-            ) {
-                drawRect(
-                    color = primaryColor,
-                    size = Size(size.width, size.height),
-                    topLeft = Offset(0f, 0f),
-                    style = Fill
-                )
-            }
-            Canvas(
-                modifier = Modifier
-                    .constrainAs(circleRight) {
-                        top.linkTo(circleLeft.bottom)
-                        start.linkTo(rectLeft.start)
-                        end.linkTo(parent.end)
-                        width = Dimension.fillToConstraints
-                    }
-                    .height(42.dp)
-            ) {
-                drawArc(
-                    color = backgroundColor,
-                    startAngle = 0f,
-                    sweepAngle = -180f,
-                    useCenter = false,
-                    topLeft = Offset(0f, 0f),
-                    size = Size(size.width, size.height),
-                    style = Fill
-                )
-            }
-            Canvas(
-                modifier = Modifier
-                    .constrainAs(rectLeft) {
-                        top.linkTo(circleRight.top)
-                        start.linkTo(parent.start)
-                        end.linkTo(layoutProfile.start)
-                    }
-                    .fillMaxWidth()
-                    .height(42.dp)
-            ) {
-                drawRect(
-                    color = backgroundColor,
-                    size = Size(size.width, size.height),
-                    topLeft = Offset(0f, 0f),
-                    style = Fill
-                )
-            }
-
-            // Gambar profil (bulat)
-            Box(
-                modifier = Modifier
-                    .constrainAs(layoutProfile) {
-                        top.linkTo(rectangle.bottom)
-                        bottom.linkTo(circleRight.bottom)
-                        start.linkTo(parent.start)
-                        end.linkTo(parent.end)
-                    }
-                    .padding(4.dp)
-                    .background(
-                        color = MaterialTheme.colorScheme.surface,
-                        shape = CircleShape
-                    )
-            ) {
-                Image(
-                    painter = painterResource(R.drawable.profile_placeholder),
-                    contentDescription = stringResource(R.string.user_profile),
+                Box(
                     modifier = Modifier
-                        .size(150.dp)
-                        .padding(8.dp)
-                        .clip(CircleShape)
-                )
-            }
-        }
-
-        Text(
-            text = stringResource(R.string.you_are_not_authenticated_click_button_below_to_sign_in),
-            textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.padding(top = 8.dp)
-        )
-
-        Button(
-            onClick = {
-                viewModel.login(context)
-            },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.surface,
-                contentColor = MaterialTheme.colorScheme.onSurface
-            ),
-            modifier = Modifier
-                .wrapContentWidth()
-                .padding(start = 8.dp, end = 8.dp),
-            elevation = ButtonDefaults.buttonElevation(2.dp)
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_google),
-                contentDescription = stringResource(R.string.sign_in_button)
-            )
-            Spacer(modifier = Modifier.size(8.dp))
-            Text(
-                text = stringResource(R.string.sign_in),
-                color = Color.Black,
-                fontWeight = FontWeight.Bold
-            )
-        }
-
-        Box(modifier = Modifier.fillMaxWidth()) {
-            Card(
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                shape = RoundedCornerShape(8.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                colors = CardDefaults.cardColors(MaterialTheme.colorScheme.primaryContainer),
-            ) {
-                ConstraintLayout(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                ) {
-                    val (language, divider2, about) = createRefs()
-
-                    Box(
-                        modifier = Modifier
-                            .constrainAs(language) {
-                                top.linkTo(parent.top)
-                                start.linkTo(parent.start)
-                                end.linkTo(parent.end)
-                            },
-                        contentAlignment = Alignment.TopEnd
-                    ) {
-                        val currentLanguage = (currentLanguageState as UiState.Success).data
-                        SettingCard(
-                            painterResource(R.drawable.ic_language),
-                            stringResource(R.string.language) + ": ${currentLanguage.name}",
-                            onClick = {
-                                expanded = !expanded
-                            },
-                        )
-
-                        DropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp)
-                        ) {
-                            languages.forEach { selectedLanguage ->
-                                DropdownMenuItem(
-                                    text = { Text(selectedLanguage.name) },
-                                    onClick = {
-                                        expanded = false
-                                        viewModel.changeLanguage(context, selectedLanguage.code)
-                                    },
-                                    trailingIcon = if (currentLanguage.code == selectedLanguage.code) {
-                                        { Icon(Icons.Default.Check, contentDescription = null) }
-                                    } else null,
-                                )
-                            }
+                        .constrainAs(rectangle) {
+                            top.linkTo(parent.top)
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
                         }
-                    }
-                    HorizontalDivider(
-                        thickness = 1.dp,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp, vertical = 0.dp)
-                            .constrainAs(divider2) {
-                                top.linkTo(language.bottom)
-                                start.linkTo(parent.start)
-                                end.linkTo(parent.end)
-                            }
+                        .height(96.dp)
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.primary)
+                )
+                Canvas(
+                    modifier = Modifier
+                        .constrainAs(circleLeft) {
+                            top.linkTo(rectangle.bottom)
+                            bottom.linkTo(rectangle.bottom)
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
+                        }
+                        .fillMaxWidth()
+                        .height(42.dp)
+                ) {
+                    drawArc(
+                        color = primaryColor,
+                        startAngle = 0f,
+                        sweepAngle = 180f,
+                        useCenter = false,
+                        size = Size(size.width, size.height),
+                        topLeft = Offset(0f, 0f),
+                        style = Fill
                     )
-                    SettingCard(
-                        painterResource(R.drawable.ic_info),
-                        stringResource(R.string.about_app),
-                        onClick = {
-                            visibleModal = ModalType.COMING_SOON
-                        },
+                }
+                Canvas(
+                    modifier = Modifier
+                        .constrainAs(rectRight) {
+                            top.linkTo(rectangle.bottom)
+                            start.linkTo(layoutProfile.end)
+                            end.linkTo(parent.end)
+                        }
+                        .fillMaxWidth()
+                        .height(42.dp)
+                ) {
+                    drawRect(
+                        color = primaryColor,
+                        size = Size(size.width, size.height),
+                        topLeft = Offset(0f, 0f),
+                        style = Fill
+                    )
+                }
+                Canvas(
+                    modifier = Modifier
+                        .constrainAs(circleRight) {
+                            top.linkTo(circleLeft.bottom)
+                            start.linkTo(rectLeft.start)
+                            end.linkTo(parent.end)
+                            width = Dimension.fillToConstraints
+                        }
+                        .height(42.dp)
+                ) {
+                    drawArc(
+                        color = backgroundColor,
+                        startAngle = 0f,
+                        sweepAngle = -180f,
+                        useCenter = false,
+                        topLeft = Offset(0f, 0f),
+                        size = Size(size.width, size.height),
+                        style = Fill
+                    )
+                }
+                Canvas(
+                    modifier = Modifier
+                        .constrainAs(rectLeft) {
+                            top.linkTo(circleRight.top)
+                            start.linkTo(parent.start)
+                            end.linkTo(layoutProfile.start)
+                        }
+                        .fillMaxWidth()
+                        .height(42.dp)
+                ) {
+                    drawRect(
+                        color = backgroundColor,
+                        size = Size(size.width, size.height),
+                        topLeft = Offset(0f, 0f),
+                        style = Fill
+                    )
+                }
+
+                // Gambar profil (bulat)
+                Box(
+                    modifier = Modifier
+                        .constrainAs(layoutProfile) {
+                            top.linkTo(rectangle.bottom)
+                            bottom.linkTo(circleRight.bottom)
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
+                        }
+                        .padding(4.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.surface,
+                            shape = CircleShape
+                        )
+                ) {
+                    Image(
+                        painter = painterResource(R.drawable.profile_placeholder),
+                        contentDescription = stringResource(R.string.user_profile),
                         modifier = Modifier
-                            .constrainAs(about) {
-                                top.linkTo(divider2.bottom)
-                                start.linkTo(parent.start)
-                                end.linkTo(parent.end)
-                            }
+                            .size(150.dp)
+                            .padding(8.dp)
+                            .clip(CircleShape)
                     )
                 }
             }
-        }
-    }
 
+            Text(
+                text = stringResource(R.string.you_are_not_authenticated_click_button_below_to_sign_in),
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+
+            Button(
+                onClick = {
+                    viewModel.login(context)
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    contentColor = MaterialTheme.colorScheme.onSurface
+                ),
+                modifier = Modifier
+                    .wrapContentWidth()
+                    .padding(start = 8.dp, end = 8.dp),
+                elevation = ButtonDefaults.buttonElevation(2.dp)
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_google),
+                    contentDescription = stringResource(R.string.sign_in_button)
+                )
+                Spacer(modifier = Modifier.size(8.dp))
+                Text(
+                    text = stringResource(R.string.sign_in),
+                    color = Color.Black,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Box(modifier = Modifier.fillMaxWidth()) {
+                Card(
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    colors = CardDefaults.cardColors(MaterialTheme.colorScheme.primaryContainer),
+                ) {
+                    ConstraintLayout(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
+                        val (language, divider2, about) = createRefs()
+
+                        Box(
+                            modifier = Modifier
+                                .constrainAs(language) {
+                                    top.linkTo(parent.top)
+                                    start.linkTo(parent.start)
+                                    end.linkTo(parent.end)
+                                },
+                            contentAlignment = Alignment.TopEnd
+                        ) {
+                            val currentLanguage = (currentLanguageState as UiState.Success).data
+                            SettingCard(
+                                painterResource(R.drawable.ic_language),
+                                stringResource(R.string.language) + ": ${currentLanguage.name}",
+                                onClick = {
+                                    expanded = !expanded
+                                },
+                            )
+
+                            DropdownMenu(
+                                expanded = expanded,
+                                onDismissRequest = { expanded = false },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp)
+                            ) {
+                                languages.forEach { selectedLanguage ->
+                                    DropdownMenuItem(
+                                        text = { Text(selectedLanguage.name) },
+                                        onClick = {
+                                            expanded = false
+                                            viewModel.changeLanguage(context, selectedLanguage.code)
+                                        },
+                                        trailingIcon = if (currentLanguage.code == selectedLanguage.code) {
+                                            { Icon(Icons.Default.Check, contentDescription = null) }
+                                        } else null,
+                                    )
+                                }
+                            }
+                        }
+                        HorizontalDivider(
+                            thickness = 1.dp,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp, vertical = 0.dp)
+                                .constrainAs(divider2) {
+                                    top.linkTo(language.bottom)
+                                    start.linkTo(parent.start)
+                                    end.linkTo(parent.end)
+                                }
+                        )
+                        SettingCard(
+                            painterResource(R.drawable.ic_info),
+                            stringResource(R.string.about_app),
+                            onClick = {
+                                visibleModal = ModalType.COMING_SOON
+                            },
+                            modifier = Modifier
+                                .constrainAs(about) {
+                                    top.linkTo(divider2.bottom)
+                                    start.linkTo(parent.start)
+                                    end.linkTo(parent.end)
+                                }
+                        )
+                    }
+                }
+            }
+        }
+
+    }
     Box(
         modifier = Modifier
             .fillMaxSize(),
@@ -464,6 +478,7 @@ fun AutenticatedDisplay(
     val currentLanguageState by viewModel.selectedLanguage.collectAsStateWithLifecycle()
     var isButtonAcivated by remember { mutableStateOf(true) }
     var isLanguageExpanded by remember { mutableStateOf(false) }
+    var visible by remember { mutableStateOf(false) }
 
     when (logoutState) {
         is UiState.Loading -> {
@@ -497,366 +512,387 @@ fun AutenticatedDisplay(
         }
 
         is UiState.Success -> {
+
             val userDetail = (userDetailState as UiState.Success).data
-            Column(
-                modifier = modifier
-                    .background(MaterialTheme.colorScheme.background)
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
-                    .testTag(TestTags.PROFILE_AUTH_SCREEN),
-                horizontalAlignment = Alignment.CenterHorizontally,
+
+            LaunchedEffect(Unit) {
+                visible = true
+            }
+            AnimatedVisibility(
+                visible = visible,
+                enter = fadeIn(animationSpec = tween(500)) + slideInVertically(
+                    initialOffsetY = { fullHeight -> -fullHeight },
+                    animationSpec = tween(500)
+                ),
+                exit = fadeOut()
             ) {
-                ConstraintLayout(
-                    modifier = Modifier
+                Column(
+                    modifier = modifier
+                        .background(MaterialTheme.colorScheme.background)
                         .fillMaxWidth()
-                        .wrapContentHeight()
-                ) {
-                    val (rectangle, circleLeft, rectLeft, rectRight, circleRight, layoutProfile) = createRefs()
-
-                    Box(
-                        modifier = Modifier
-                            .constrainAs(rectangle) {
-                                top.linkTo(parent.top)
-                                start.linkTo(parent.start)
-                                end.linkTo(parent.end)
-                            }
-                            .height(96.dp)
-                            .fillMaxWidth()
-                            .background(MaterialTheme.colorScheme.primary)
-                    )
-                    Canvas(
-                        modifier = Modifier
-                            .constrainAs(circleLeft) {
-                                top.linkTo(rectangle.bottom)
-                                bottom.linkTo(rectangle.bottom)
-                                start.linkTo(parent.start)
-                                end.linkTo(parent.end)
-                            }
-                            .fillMaxWidth()
-                            .height(42.dp)
-                    ) {
-                        drawArc(
-                            color = primaryColor,
-                            startAngle = 0f,
-                            sweepAngle = 180f,
-                            useCenter = false,
-                            size = Size(size.width, size.height),
-                            topLeft = Offset(0f, 0f),
-                            style = Fill
-                        )
-                    }
-                    Canvas(
-                        modifier = Modifier
-                            .constrainAs(rectRight) {
-                                top.linkTo(rectangle.bottom)
-                                start.linkTo(layoutProfile.end)
-                                end.linkTo(parent.end)
-                            }
-                            .fillMaxWidth()
-                            .height(42.dp)
-                    ) {
-                        drawRect(
-                            color = primaryColor,
-                            size = Size(size.width, size.height),
-                            topLeft = Offset(0f, 0f),
-                            style = Fill
-                        )
-                    }
-                    Canvas(
-                        modifier = Modifier
-                            .constrainAs(circleRight) {
-                                top.linkTo(circleLeft.bottom)
-                                start.linkTo(rectLeft.start)
-                                end.linkTo(parent.end)
-                                width = Dimension.fillToConstraints
-                            }
-                            .height(42.dp)
-                    ) {
-                        drawArc(
-                            color = backgroundColor,
-                            startAngle = 0f,
-                            sweepAngle = -180f,
-                            useCenter = false,
-                            topLeft = Offset(0f, 0f),
-                            size = Size(size.width, size.height),
-                            style = Fill
-                        )
-                    }
-                    Canvas(
-                        modifier = Modifier
-                            .constrainAs(rectLeft) {
-                                top.linkTo(circleRight.top)
-                                start.linkTo(parent.start)
-                                end.linkTo(layoutProfile.start)
-                            }
-                            .fillMaxWidth()
-                            .height(42.dp)
-                    ) {
-                        drawRect(
-                            color = backgroundColor,
-                            size = Size(size.width, size.height),
-                            topLeft = Offset(0f, 0f),
-                            style = Fill
-                        )
-                    }
-
-                    // Gambar profil (bulat)
-                    Box(
-                        modifier = Modifier
-                            .constrainAs(layoutProfile) {
-                                top.linkTo(rectangle.bottom)
-                                bottom.linkTo(circleRight.bottom)
-                                start.linkTo(parent.start)
-                                end.linkTo(parent.end)
-                            }
-                            .padding(4.dp)
-                            .background(
-                                color = MaterialTheme.colorScheme.surface,
-                                shape = CircleShape
-                            )
-                    ) {
-                        AsyncImage(
-                            model = userDetail.profileImg,
-                            contentDescription = stringResource(R.string.user_profile),
-                            modifier = Modifier
-                                .size(150.dp)
-                                .padding(8.dp)
-                                .clip(CircleShape)
-                        )
-                    }
-                }
-
-                Text(
-                    text = userDetail.username,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontSize = 26.sp,
-                    modifier = Modifier.padding(top = 8.dp)
-                )
-                Text(
-                    text = userDetail.email,
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
-
-                Card(
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 8.dp, vertical = 8.dp),
-                    colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceVariant),
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                    ) {
-                        IconButton(
-                            onClick = {
-                                visibleModal = ModalType.EDIT_PROFILE
-                            },
-                            modifier = Modifier
-                                .align(Alignment.TopEnd)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Edit,
-                                contentDescription = stringResource(R.string.edit_profile),
-                                modifier = Modifier
-                                    .padding(4.dp)
-                            )
-                        }
-                        Column(
-                            modifier = Modifier.padding(16.dp)
-                        ) {
-                            Text(
-                                text = stringResource(R.string.about_me),
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = userDetail.aboutMe
-                                    ?: stringResource(R.string.no_information_provided),
-                                textAlign = TextAlign.Justify,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface,
-                            )
-                        }
-                    }
-
-                }
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 8.dp),
-                ) {
-                    Card(
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f),
-                        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceVariant),
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .padding(horizontal = 8.dp)
-                                .padding(top = 8.dp, bottom = 16.dp)
-                        ) {
-                            Text(
-                                text = stringResource(R.string.birth_date),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = userDetail.birthDate
-                                    ?: stringResource(R.string.no_information_provided),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Card(
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f),
-                        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceVariant),
-                    ) {
-
-                        Column(
-                            modifier = Modifier
-                                .padding(horizontal = 8.dp)
-                                .padding(top = 8.dp, bottom = 16.dp)
-                        ) {
-                            Text(
-                                text = stringResource(R.string.gender),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = userDetail.gender
-                                    ?: stringResource(R.string.no_information_provided), // Data dummy, ganti dengan data sebenarnya
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
-                }
-                Card(
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    colors = CardDefaults.cardColors(MaterialTheme.colorScheme.primaryContainer),
+                        .verticalScroll(rememberScrollState())
+                        .testTag(TestTags.PROFILE_AUTH_SCREEN),
+                    horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     ConstraintLayout(
-                        modifier
+                        modifier = Modifier
                             .fillMaxWidth()
+                            .wrapContentHeight()
                     ) {
-                        val (language, divider2, about, divider3, logout) = createRefs()
+                        val (rectangle, circleLeft, rectLeft, rectRight, circleRight, layoutProfile) = createRefs()
 
                         Box(
                             modifier = Modifier
-                                .constrainAs(language) {
+                                .constrainAs(rectangle) {
                                     top.linkTo(parent.top)
                                     start.linkTo(parent.start)
                                     end.linkTo(parent.end)
-                                },
-                            contentAlignment = Alignment.TopEnd
-                        ) {
-                            val languages = Language.getAllLanguages()
-                            val currentLanguage = (currentLanguageState as UiState.Success).data
-                            SettingCard(
-                                painterResource(R.drawable.ic_language),
-                                stringResource(R.string.language) + ": ${currentLanguage.name}",
-                                onClick = {
-                                    isLanguageExpanded = !isLanguageExpanded
-                                },
-                            )
-
-                            DropdownMenu(
-                                expanded = isLanguageExpanded,
-                                onDismissRequest = { isLanguageExpanded = false },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp)
-                            ) {
-                                languages.forEach { selectedLanguage ->
-                                    DropdownMenuItem(
-                                        text = { Text(selectedLanguage.name) },
-                                        onClick = {
-                                            isLanguageExpanded = false
-                                            viewModel.changeLanguage(context, selectedLanguage.code)
-                                        },
-                                        trailingIcon = if (currentLanguage.code == selectedLanguage.code) {
-                                            { Icon(Icons.Default.Check, contentDescription = null) }
-                                        } else null,
-                                    )
                                 }
+                                .height(96.dp)
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.primary)
+                        )
+                        Canvas(
+                            modifier = Modifier
+                                .constrainAs(circleLeft) {
+                                    top.linkTo(rectangle.bottom)
+                                    bottom.linkTo(rectangle.bottom)
+                                    start.linkTo(parent.start)
+                                    end.linkTo(parent.end)
+                                }
+                                .fillMaxWidth()
+                                .height(42.dp)
+                        ) {
+                            drawArc(
+                                color = primaryColor,
+                                startAngle = 0f,
+                                sweepAngle = 180f,
+                                useCenter = false,
+                                size = Size(size.width, size.height),
+                                topLeft = Offset(0f, 0f),
+                                style = Fill
+                            )
+                        }
+                        Canvas(
+                            modifier = Modifier
+                                .constrainAs(rectRight) {
+                                    top.linkTo(rectangle.bottom)
+                                    start.linkTo(layoutProfile.end)
+                                    end.linkTo(parent.end)
+                                }
+                                .fillMaxWidth()
+                                .height(42.dp)
+                        ) {
+                            drawRect(
+                                color = primaryColor,
+                                size = Size(size.width, size.height),
+                                topLeft = Offset(0f, 0f),
+                                style = Fill
+                            )
+                        }
+                        Canvas(
+                            modifier = Modifier
+                                .constrainAs(circleRight) {
+                                    top.linkTo(circleLeft.bottom)
+                                    start.linkTo(rectLeft.start)
+                                    end.linkTo(parent.end)
+                                    width = Dimension.fillToConstraints
+                                }
+                                .height(42.dp)
+                        ) {
+                            drawArc(
+                                color = backgroundColor,
+                                startAngle = 0f,
+                                sweepAngle = -180f,
+                                useCenter = false,
+                                topLeft = Offset(0f, 0f),
+                                size = Size(size.width, size.height),
+                                style = Fill
+                            )
+                        }
+                        Canvas(
+                            modifier = Modifier
+                                .constrainAs(rectLeft) {
+                                    top.linkTo(circleRight.top)
+                                    start.linkTo(parent.start)
+                                    end.linkTo(layoutProfile.start)
+                                }
+                                .fillMaxWidth()
+                                .height(42.dp)
+                        ) {
+                            drawRect(
+                                color = backgroundColor,
+                                size = Size(size.width, size.height),
+                                topLeft = Offset(0f, 0f),
+                                style = Fill
+                            )
+                        }
+
+                        // Gambar profil (bulat)
+                        Box(
+                            modifier = Modifier
+                                .constrainAs(layoutProfile) {
+                                    top.linkTo(rectangle.bottom)
+                                    bottom.linkTo(circleRight.bottom)
+                                    start.linkTo(parent.start)
+                                    end.linkTo(parent.end)
+                                }
+                                .padding(4.dp)
+                                .background(
+                                    color = MaterialTheme.colorScheme.surface,
+                                    shape = CircleShape
+                                )
+                        ) {
+                            AsyncImage(
+                                model = userDetail.profileImg,
+                                contentDescription = stringResource(R.string.user_profile),
+                                modifier = Modifier
+                                    .size(150.dp)
+                                    .padding(8.dp)
+                                    .clip(CircleShape)
+                            )
+                        }
+                    }
+
+                    Text(
+                        text = userDetail.username,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontSize = 26.sp,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                    Text(
+                        text = userDetail.email,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+
+                    Card(
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp, vertical = 8.dp),
+                        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceVariant),
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                        ) {
+                            IconButton(
+                                onClick = {
+                                    visibleModal = ModalType.EDIT_PROFILE
+                                },
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Edit,
+                                    contentDescription = stringResource(R.string.edit_profile),
+                                    modifier = Modifier
+                                        .padding(4.dp)
+                                )
+                            }
+                            Column(
+                                modifier = Modifier.padding(16.dp)
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.about_me),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = userDetail.aboutMe
+                                        ?: stringResource(R.string.no_information_provided),
+                                    textAlign = TextAlign.Justify,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                )
                             }
                         }
-                        HorizontalDivider(
-                            thickness = 1.dp,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            modifier = Modifier
-                                .padding(horizontal = 16.dp, vertical = 0.dp)
-                                .constrainAs(divider2) {
-                                    top.linkTo(language.bottom)
-                                    start.linkTo(parent.start)
-                                    end.linkTo(parent.end)
-                                }
-                        )
-                        SettingCard(
-                            painterResource(R.drawable.ic_info),
-                            stringResource(R.string.about_app),
-                            onClick = {
-                                visibleModal = ModalType.COMING_SOON
-                            },
-                            modifier = Modifier
-                                .constrainAs(about) {
-                                    top.linkTo(divider2.bottom)
-                                    start.linkTo(parent.start)
-                                    end.linkTo(parent.end)
-                                }
-                        )
 
-                        HorizontalDivider(
-                            thickness = 1.dp,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            modifier = Modifier
-                                .padding(horizontal = 16.dp, vertical = 0.dp)
-                                .constrainAs(divider3) {
-                                    top.linkTo(about.bottom)
-                                    start.linkTo(parent.start)
-                                    end.linkTo(parent.end)
-                                }
-                        )
+                    }
 
-                        SettingCard(
-                            painterResource(R.drawable.ic_logout),
-                            stringResource(R.string.logout),
-                            onClick = {
-                                visibleModal = ModalType.LOGOUT
-                            },
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp),
+                    ) {
+                        Card(
+                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                            shape = RoundedCornerShape(12.dp),
                             modifier = Modifier
-                                .constrainAs(logout) {
-                                    top.linkTo(divider3.bottom)
-                                    start.linkTo(parent.start)
-                                    end.linkTo(parent.end)
-                                }
-                        )
+                                .fillMaxWidth()
+                                .weight(1f),
+                            colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceVariant),
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .padding(horizontal = 8.dp)
+                                    .padding(top = 8.dp, bottom = 16.dp)
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.birth_date),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = userDetail.birthDate
+                                        ?: stringResource(R.string.no_information_provided),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Card(
+                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f),
+                            colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceVariant),
+                        ) {
 
+                            Column(
+                                modifier = Modifier
+                                    .padding(horizontal = 8.dp)
+                                    .padding(top = 8.dp, bottom = 16.dp)
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.gender),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = userDetail.gender
+                                        ?: stringResource(R.string.no_information_provided), // Data dummy, ganti dengan data sebenarnya
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+                    }
+                    Card(
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.primaryContainer),
+                    ) {
+                        ConstraintLayout(
+                            modifier
+                                .fillMaxWidth()
+                        ) {
+                            val (language, divider2, about, divider3, logout) = createRefs()
+
+                            Box(
+                                modifier = Modifier
+                                    .constrainAs(language) {
+                                        top.linkTo(parent.top)
+                                        start.linkTo(parent.start)
+                                        end.linkTo(parent.end)
+                                    },
+                                contentAlignment = Alignment.TopEnd
+                            ) {
+                                val languages = Language.getAllLanguages()
+                                val currentLanguage = (currentLanguageState as UiState.Success).data
+                                SettingCard(
+                                    painterResource(R.drawable.ic_language),
+                                    stringResource(R.string.language) + ": ${currentLanguage.name}",
+                                    onClick = {
+                                        isLanguageExpanded = !isLanguageExpanded
+                                    },
+                                )
+
+                                DropdownMenu(
+                                    expanded = isLanguageExpanded,
+                                    onDismissRequest = { isLanguageExpanded = false },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp)
+                                ) {
+                                    languages.forEach { selectedLanguage ->
+                                        DropdownMenuItem(
+                                            text = { Text(selectedLanguage.name) },
+                                            onClick = {
+                                                isLanguageExpanded = false
+                                                viewModel.changeLanguage(
+                                                    context,
+                                                    selectedLanguage.code
+                                                )
+                                            },
+                                            trailingIcon = if (currentLanguage.code == selectedLanguage.code) {
+                                                {
+                                                    Icon(
+                                                        Icons.Default.Check,
+                                                        contentDescription = null
+                                                    )
+                                                }
+                                            } else null,
+                                        )
+                                    }
+                                }
+                            }
+                            HorizontalDivider(
+                                thickness = 1.dp,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                modifier = Modifier
+                                    .padding(horizontal = 16.dp, vertical = 0.dp)
+                                    .constrainAs(divider2) {
+                                        top.linkTo(language.bottom)
+                                        start.linkTo(parent.start)
+                                        end.linkTo(parent.end)
+                                    }
+                            )
+                            SettingCard(
+                                painterResource(R.drawable.ic_info),
+                                stringResource(R.string.about_app),
+                                onClick = {
+                                    visibleModal = ModalType.COMING_SOON
+                                },
+                                modifier = Modifier
+                                    .constrainAs(about) {
+                                        top.linkTo(divider2.bottom)
+                                        start.linkTo(parent.start)
+                                        end.linkTo(parent.end)
+                                    }
+                            )
+
+                            HorizontalDivider(
+                                thickness = 1.dp,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                modifier = Modifier
+                                    .padding(horizontal = 16.dp, vertical = 0.dp)
+                                    .constrainAs(divider3) {
+                                        top.linkTo(about.bottom)
+                                        start.linkTo(parent.start)
+                                        end.linkTo(parent.end)
+                                    }
+                            )
+
+                            SettingCard(
+                                painterResource(R.drawable.ic_logout),
+                                stringResource(R.string.logout),
+                                onClick = {
+                                    visibleModal = ModalType.LOGOUT
+                                },
+                                modifier = Modifier
+                                    .constrainAs(logout) {
+                                        top.linkTo(divider3.bottom)
+                                        start.linkTo(parent.start)
+                                        end.linkTo(parent.end)
+                                    }
+                            )
+
+                        }
                     }
                 }
             }
-
 
             AnimatedVisibility(
                 visible = visibleModal != null,

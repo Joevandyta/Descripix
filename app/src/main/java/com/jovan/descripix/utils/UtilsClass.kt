@@ -1,28 +1,17 @@
 package com.jovan.descripix.utils
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
-import android.net.Uri
-import android.util.Log
-import android.widget.Toast
 import androidx.core.graphics.scale
 import com.google.gson.Gson
 import com.jovan.descripix.data.source.remote.response.ApiResponse
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import retrofit2.HttpException
-import java.io.BufferedInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
-import java.io.InputStream
 import java.net.SocketException
 import java.net.SocketTimeoutException
-import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -41,15 +30,26 @@ suspend fun <T> handleApiException(
     } catch (e: SocketTimeoutException) {
         ApiResponse(false, "Connection Timeout", null)
     } catch (e: HttpException) {
-        val errorMessage = try {
-            val errorJson = e.response()?.errorBody()?.string()
-            val errorResponse = Gson().fromJson(errorJson, ApiResponse::class.java)
-            Log.d("handleApiException", errorResponse.message.toString())
-            errorResponse.message.toString()
-        } catch (parseException: Exception) {
-            e.message.toString()
+        when (e.code()) {
+            500 -> {
+                ApiResponse(
+                    false,
+                    "Server Busy. Please try again later.",
+                    null
+                )
+            }
+            else -> {
+                val errorMessage = try {
+                    val errorJson = e.response()?.errorBody()?.string()
+                    val errorResponse =
+                        Gson().fromJson(errorJson, ApiResponse::class.java)
+                    errorResponse.message.toString()
+                } catch (parseException: Exception) {
+                    e.message.toString()
+                }
+                ApiResponse(false, errorMessage, null)
+            }
         }
-        ApiResponse(false, errorMessage, null)
     }
 }
 

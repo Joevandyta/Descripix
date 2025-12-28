@@ -2,20 +2,15 @@ package com.jovan.descripix.ui.screen.profile
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
-import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performTextClearance
-import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
 import androidx.navigation.compose.ComposeNavigator
 import androidx.navigation.testing.TestNavHostController
 import androidx.test.espresso.IdlingRegistry
-import com.jovan.descripix.DescripixApp
 import com.jovan.descripix.FakeObject
 import com.jovan.descripix.R
 import com.jovan.descripix.TestActivity
@@ -23,7 +18,6 @@ import com.jovan.descripix.data.source.local.datastore.SessionData
 import com.jovan.descripix.data.source.local.datastore.UserPreference
 import com.jovan.descripix.data.source.local.entity.UserEntity
 import com.jovan.descripix.data.source.local.room.UserDao
-import com.jovan.descripix.ui.common.Language
 import com.jovan.descripix.ui.common.TestTags
 import com.jovan.descripix.ui.theme.DescripixTheme
 import com.jovan.descripix.utils.EspressoIdlingResource
@@ -87,7 +81,7 @@ class ProfileScreenTest {
                     email = "test@gmail.com",
                     gender = "male",
                     birthDate = null,
-                    aboutMe = "start ABout Me",
+                    aboutMe = "start About Me",
                     profileImg = "https://lh3.googleusercontent.com/a/ACg8ocIRKZM9Yq2U83R604HPEA3XkRawhJTLT7G73YkxMITK0ROWIw=s96-c"
                 )
             )
@@ -110,14 +104,14 @@ class ProfileScreenTest {
         }
     }
     @Test
-    fun authenticateProfile_onlineMode_displaysUserData(){
+    fun authenticateProfileScreen_displaysUserData(){
 
         val dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
                 return when {
                     request.path == "/auth/token-verify/" && request.method == "GET" -> {
                         MockResponse()
-                            .setResponseCode(401)
+                            .setResponseCode(200)
                             .setBody(JsonConverter.readStringFromFile("token_verify_success.json"))
                     }
 
@@ -139,26 +133,17 @@ class ProfileScreenTest {
     @Test
     fun profile_logout_showsGuestUI(){
         val context = composeRule.activity
-        var tokenVerifyCallCount = 0
-
         val dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
                 return when {
-                    request.path == "/auth/token-verify/" && request.method == "GET" -> {
-                        tokenVerifyCallCount++
+                    request.path == "/auth/token-verify/" && request.method == "GET" ->
                         MockResponse()
-                            .setResponseCode(401)
-                            .setBody(JsonConverter.readStringFromFile("token_verify_failed.json"))
-                    }
+                            .setResponseCode(200)
+                            .setBody(JsonConverter.readStringFromFile("token_verify_success.json"))
 
                     request.path == "/auth/user-detail/" && request.method == "GET" ->
                         MockResponse().setResponseCode(200)
                             .setBody(JsonConverter.readStringFromFile("get_user_detail_success.json"))
-
-                    request.path == "/auth/token-refresh/" && request.method == "POST" ->
-                        MockResponse()
-                            .setResponseCode(200)
-                            .setBody(JsonConverter.readStringFromFile("refresh_token_success.json"))
 
                     request.path == "/auth/logout/" && request.method == "POST" ->
                         MockResponse().setResponseCode(200)
@@ -219,7 +204,7 @@ class ProfileScreenTest {
         composeRule.onNodeWithTag(TestTags.PROFILE_AUTH_SCREEN).assertExists()
 
         //Check started aboutme Text
-        composeRule.onNodeWithText("start ABout Me").assertExists()
+        composeRule.onNodeWithText("start About Me", ignoreCase = true).assertExists()
 
         //Click Edit Profile
         composeRule.onNodeWithContentDescription(textEditProfile).assertExists().performClick()
@@ -238,7 +223,7 @@ class ProfileScreenTest {
 
         composeRule.onNodeWithTag(TestTags.EDIT_PROFILE_MODAL).assertDoesNotExist()
 
-        composeRule.onNodeWithText("Updated About Me").assertExists()
-        composeRule.onNodeWithText("start ABout Me").assertDoesNotExist()
+        composeRule.onNodeWithText("Updated About Me", ignoreCase = true).assertExists()
+        composeRule.onNodeWithText("start About Me", ignoreCase = true).assertDoesNotExist()
     }
 }

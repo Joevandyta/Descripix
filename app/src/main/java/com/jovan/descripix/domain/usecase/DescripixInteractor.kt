@@ -2,7 +2,6 @@ package com.jovan.descripix.domain.usecase
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import com.jovan.descripix.data.source.local.datastore.SessionData
 import com.jovan.descripix.data.source.local.entity.CaptionEntity
 import com.jovan.descripix.data.source.local.entity.UserEntity
@@ -11,8 +10,6 @@ import com.jovan.descripix.data.source.remote.request.UserRequest
 import com.jovan.descripix.data.source.remote.response.ApiResponse
 import com.jovan.descripix.data.source.remote.response.CaptionDataResponse
 import com.jovan.descripix.data.source.remote.response.LoginResponse
-import com.jovan.descripix.ui.common.Language
-
 import com.jovan.descripix.domain.repository.IDescripixRepository
 import kotlinx.coroutines.flow.Flow
 import org.json.JSONObject
@@ -22,7 +19,6 @@ class DescripixInteractor @Inject constructor(private val repository: IDescripix
     DescripixUseCase {
 
     override fun getSession(context: Context, isConnected: Boolean): Flow<SessionData> {
-        Log.d("DescripixInteractor", "getSession called")
         return repository.getSession(context, isConnected)
     }
 
@@ -30,14 +26,6 @@ class DescripixInteractor @Inject constructor(private val repository: IDescripix
         googleId: String,
         context: Context
     ): ApiResponse<LoginResponse> = repository.login(googleId, context)
-
-//    override suspend fun saveLanguage(language: Language) {
-//        return repository.saveLanguage(language)
-//    }
-//
-//    override fun getLanguage(): Flow<Language> {
-//        return repository.getLanguage()
-//    }
 
     override fun isConnected(): Flow<Boolean> = repository.isConnected()
     override suspend fun getAllCaptions(isConnected: Boolean, token: String, context: Context): Flow<List<CaptionEntity>> =
@@ -58,8 +46,8 @@ class DescripixInteractor @Inject constructor(private val repository: IDescripix
     override suspend fun editCaption(id: Int, captionRequest: CaptionRequest, token: String, context: Context): ApiResponse<Unit> =
         repository.editCaption(id, captionRequest, token, context)
 
-    override suspend fun generateCaption(token: String,languageCode: String, metadata: JSONObject, image: Uri, context: Context) =
-        repository.generateCaption(token, languageCode, metadata, image, context)
+    override suspend fun generateCaption(token: String,languageCode: String, metadata: JSONObject, image: Uri, style: String, context: Context) =
+        repository.generateCaption(token, languageCode, metadata, image, style,context)
 
     override suspend fun getCaptionDetails(id: Int, token: String, context: Context) : ApiResponse<CaptionDataResponse> =
         repository.getCaptionDetails(id, token, context)

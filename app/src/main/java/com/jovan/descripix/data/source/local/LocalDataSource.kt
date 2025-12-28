@@ -6,7 +6,6 @@ import com.jovan.descripix.data.source.local.entity.CaptionEntity
 import com.jovan.descripix.data.source.local.entity.UserEntity
 import com.jovan.descripix.data.source.local.room.CaptionDao
 import com.jovan.descripix.data.source.local.room.UserDao
-import com.jovan.descripix.ui.common.Language
 import com.jovan.descripix.domain.repository.ILocalDataSource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged

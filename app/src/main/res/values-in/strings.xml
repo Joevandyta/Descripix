@@ -59,5 +59,13 @@
     <string name="saved">Disimpan</string>
     <string name="save">Simpan</string>
     <string name="save_caption">Simpan Caption</string>
+    <string name="result_style">Style</string>
+    <string name="tap_to_add_or_modify_image_data">Ketuk untuk menambah atau mengubah data gambar.</string>
+    <string name="tap_the_caption_text_to_make_changes">Ketuk teks caption untuk membuat perubahan.</string>
+    <string name="share_to_instagram">Bagikan ke Instagram</string>
+    <string name="share_to_whatsapp">Bagikan ke Whatsapp</string>
+    <string name="server_sibuk_silakan_coba_lagi">Server sibuk, silakan coba lagi</string>
+    <string name="click_save_to_save_caption">Tap simpan untuk simpan caption</string>
+    <string name="click_saved_to_delete_caption">Tap lagi tombol disimpan untuk hapus caption</string>
 
 </resources>

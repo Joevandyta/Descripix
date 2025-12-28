@@ -1,7 +1,6 @@
 package com.jovan.descripix.di
 
 import android.content.Context
-import com.jovan.descripix.data.source.remote.network.ConnectivityObserverImpl
 import com.jovan.descripix.data.source.remote.network.ApiService
 import com.jovan.descripix.data.source.remote.network.FakeConectivityObserver
 import com.jovan.descripix.utils.conectivity.ConnectivityObserver

@@ -2,7 +2,6 @@ package com.jovan.descripix.ui.screen.detail
 
 import android.app.LocaleManager
 import android.content.Context
-import android.content.Intent
 import android.location.Address
 import android.location.Geocoder
 import android.net.Uri
@@ -37,8 +36,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -134,7 +131,7 @@ class DetailsViewModel @Inject constructor(
                 model = ifd0Directory?.getString(ExifIFD0Directory.TAG_MODEL)
                 author = ifd0Directory?.getString(ExifIFD0Directory.TAG_ARTIST)
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
         }
         val dateFormatted = date?.let { dateFormater(it) }
         return CaptionEntity(
@@ -170,7 +167,7 @@ class DetailsViewModel @Inject constructor(
             try {
                 val addresses = geocoder.getFromLocation(lat, lon, 1)
                 addresses?.get(0)?.getAddressLine(0)
-            } catch (e: IOException) {
+            } catch (_: IOException) {
                 null
             }
         }
@@ -216,12 +213,15 @@ class DetailsViewModel @Inject constructor(
         model: String,
         image: Uri,
         token: String,
+        style: String,
+        languageCode: String,
         context: Context
     ) {
         _generatedCaption.value = UiState.Loading
 
         viewModelScope.launch {
-            val languageCode = getLanguageCode(context)
+
+//            val languageCode = getLanguageCode(context)
             try {
                 val metadata = createMetadataJson(
                     author = author,
@@ -235,7 +235,7 @@ class DetailsViewModel @Inject constructor(
                     if(token.isBlank()) BuildConfig.GUEST_USER_TOKEN
                     else token
 
-                val result = descripixUseCase.generateCaption(finalToken, languageCode, metadata, image, context)
+                val result = descripixUseCase.generateCaption(finalToken, languageCode, metadata, image, style,context)
                 _generatedCaption.value = UiState.Success(result)
 
             } catch (e: Exception) {
@@ -244,7 +244,7 @@ class DetailsViewModel @Inject constructor(
         }
     }
 
-    private fun getLanguageCode(context: Context): String {
+    fun getLanguageCode(context: Context): String {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             context.getSystemService(LocaleManager::class.java).applicationLocales[0]?.toLanguageTag()
                 ?.split("-")?.first() ?: Language.English.code

@@ -1,29 +1,31 @@
 package com.jovan.descripix.ui.screen.detail
 
+import android.content.Intent
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
-import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
-import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
-import androidx.compose.ui.test.printToLog
-import androidx.navigation.compose.ComposeNavigator
+import androidx.core.net.toUri
 import androidx.navigation.testing.TestNavHostController
 import androidx.test.espresso.IdlingRegistry
-import com.jovan.descripix.DescripixApp
+import androidx.test.espresso.intent.Intents
+import androidx.test.espresso.intent.Intents.intended
+import androidx.test.espresso.intent.matcher.IntentMatchers.hasAction
+import androidx.test.espresso.intent.matcher.IntentMatchers.hasExtra
+import androidx.test.espresso.intent.matcher.IntentMatchers.hasPackage
+import androidx.test.espresso.intent.matcher.IntentMatchers.hasType
 import com.jovan.descripix.FakeObject
 import com.jovan.descripix.R
 import com.jovan.descripix.TestActivity
 import com.jovan.descripix.data.source.local.datastore.SessionData
 import com.jovan.descripix.data.source.local.datastore.UserPreference
 import com.jovan.descripix.data.source.local.entity.CaptionEntity
+import com.jovan.descripix.ui.common.SocialMediaPackage
 import com.jovan.descripix.ui.common.TestTags
 import com.jovan.descripix.ui.theme.DescripixTheme
 import com.jovan.descripix.utils.EspressoIdlingResource
@@ -35,6 +37,7 @@ import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.RecordedRequest
+import org.hamcrest.Matchers.allOf
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -59,7 +62,6 @@ class DetailsScreenTest {
 
     @Inject
     lateinit var userPreference: UserPreference
-
 
     @Before
     fun setup() {
@@ -139,7 +141,7 @@ class DetailsScreenTest {
     }
 
     @Test
-    fun caption_regenerate_updatesDisplayedCaption() {
+    fun regenerateCaption_updatesDisplayedCaption() {
         launchDetailScreen(FakeObject.savedCaptionEntity)
 
         val context = composeRule.activity
@@ -188,8 +190,8 @@ class DetailsScreenTest {
                 return when {
                     request.path == "/auth/token-verify/" && request.method == "GET" ->
                         MockResponse()
-                            .setResponseCode(401)
-                            .setBody(JsonConverter.readStringFromFile("token_verify_failed.json"))
+                            .setResponseCode(200)
+                            .setBody(JsonConverter.readStringFromFile("token_verify_success.json"))
 
                     request.path == "/caption/generate/" && request.method == "POST" ->
                         MockResponse().setResponseCode(200)
@@ -241,8 +243,8 @@ class DetailsScreenTest {
                 return when {
                     request.path == "/auth/token-verify/" && request.method == "GET" ->
                         MockResponse()
-                            .setResponseCode(401)
-                            .setBody(JsonConverter.readStringFromFile("token_verify_failed.json"))
+                            .setResponseCode(200)
+                            .setBody(JsonConverter.readStringFromFile("token_verify_success.json"))
 
                     request.path?.startsWith("/caption/detail/") == true && request.method == "PUT" ->
                         MockResponse().setResponseCode(200)
@@ -311,8 +313,8 @@ class DetailsScreenTest {
                 return when {
                     request.path == "/auth/token-verify/" && request.method == "GET" ->
                         MockResponse()
-                            .setResponseCode(401)
-                            .setBody(JsonConverter.readStringFromFile("token_verify_failed.json"))
+                            .setResponseCode(200)
+                            .setBody(JsonConverter.readStringFromFile("token_verify_success.json"))
 
                     request.path?.startsWith("/caption/detail/") == true && request.method == "DELETE" ->
                         MockResponse().setResponseCode(200)
@@ -343,5 +345,27 @@ class DetailsScreenTest {
         composeRule.onNodeWithText(textSaved).assertDoesNotExist()
         composeRule.onNodeWithText(textSave).assertExists()
         composeRule.onNodeWithText(textSave).assertIsDisplayed()
+    }
+
+    @Test
+    fun shareCaptionResult_createCorrectIntent(){
+        val context = composeRule.activity
+        val fakeCaption = FakeObject.savedCaptionEntity
+        launchDetailScreen(fakeCaption)
+        Intents.init()
+        composeRule.onNodeWithTag(TestTags.BUTTON_SHARE).performClick()
+        val text = context.getString(R.string.share_to_instagram)
+        composeRule.onNodeWithContentDescription(text).performClick()
+
+        val sharedImage = fakeCaption.image.toUri()
+        val sharedCaption = fakeCaption.caption
+
+        intended(allOf(
+            hasAction(Intent.ACTION_SEND),
+            hasPackage(SocialMediaPackage.INSTAGRAM),
+            hasType("image/*"),
+            hasExtra(Intent.EXTRA_TEXT, sharedCaption),
+            hasExtra(Intent.EXTRA_STREAM, sharedImage)
+        ))
     }
 }

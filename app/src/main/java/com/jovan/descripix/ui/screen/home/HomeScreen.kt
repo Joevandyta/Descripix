@@ -1,6 +1,5 @@
 package com.jovan.descripix.ui.screen.home
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -52,12 +51,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jovan.descripix.R
 import com.jovan.descripix.data.source.local.entity.CaptionEntity
+import com.jovan.descripix.ui.common.TestTags
 import com.jovan.descripix.ui.common.UiState
 import com.jovan.descripix.ui.component.CaptionItem
 import com.jovan.descripix.ui.component.LottieAnimationPreload
 import com.jovan.descripix.ui.component.ShimmerListItem
 import com.jovan.descripix.ui.theme.DescripixTheme
-import com.jovan.descripix.ui.common.TestTags
 
 @Composable
 fun HomeScreen(
@@ -269,7 +268,6 @@ fun AutenticatedScreen(
     val captionItems = (captionListState as? UiState.Success)?.data.orEmpty()
 
     LaunchedEffect(captionDetailState) {
-        Log.d("CaptionList", "State changed: $captionDetailState")
         when (val state = captionDetailState) {
             is UiState.Success -> {
                 val captionData = state.data.data

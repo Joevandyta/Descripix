@@ -1,5 +1,6 @@
 package com.jovan.descripix.ui.screen.detail
 
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutLinearInEasing
@@ -11,12 +12,15 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,13 +34,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.GTranslate
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.SignLanguage
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -65,22 +73,27 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.datasource.LoremIpsum
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.jovan.descripix.R
 import com.jovan.descripix.data.source.local.entity.CaptionEntity
+import com.jovan.descripix.ui.common.Language
 import com.jovan.descripix.ui.common.ModalType
 import com.jovan.descripix.ui.common.SocialMediaPackage
 import com.jovan.descripix.ui.common.TestTags
 import com.jovan.descripix.ui.common.UiState
+import com.jovan.descripix.ui.common.WritingStyle
+import com.jovan.descripix.ui.component.AnimatedExpandableTitleCard
 import com.jovan.descripix.ui.component.DateTimePickerModal
 import com.jovan.descripix.ui.component.FloatingToolbar
 import com.jovan.descripix.ui.component.MetadataDateItem
@@ -88,8 +101,14 @@ import com.jovan.descripix.ui.component.MetadataItem
 import com.jovan.descripix.ui.component.ShareList
 import com.jovan.descripix.ui.component.TaskFailedModal
 import com.jovan.descripix.ui.theme.DescripixTheme
+import com.jovan.descripix.utils.ImageConverter
+import com.jovan.descripix.utils.ImageConverter.fileToContentUri
+import com.jovan.descripix.utils.reduceFileSize
+import com.jovan.descripix.utils.resizeIfTooLarge
 import com.jovan.descripix.utils.shareContent
 import com.jovan.descripix.utils.shareToSpecificApp
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -113,13 +132,15 @@ fun DetailScreen(
     var toggleSaveActive by remember { mutableStateOf(false) }
     var isGenerateButtonActive by remember { mutableStateOf(true) }
     var isToggleSaveEnabled by remember { mutableStateOf(true) }
-
+    var sharedImage by remember { mutableStateOf(captionEntity.image) }
     var captionText by remember { mutableStateOf(captionEntity.caption ?: "") }
     var author by remember { mutableStateOf(captionEntity.author ?: "") }
     var selectedDate by remember { mutableStateOf(captionEntity.date ?: "") }
     var location by remember { mutableStateOf(captionEntity.location ?: "") }
     var device by remember { mutableStateOf(captionEntity.device ?: "") }
     var model by remember { mutableStateOf(captionEntity.model ?: "") }
+    var selectedStyle by remember { mutableStateOf(WritingStyle.CASUAL) }
+    var selectedLanguage by remember { mutableStateOf(Language.English.code) }
 
     var isAuthorChecked by remember { mutableStateOf(false) }
     var isDateChecked by remember { mutableStateOf(false) }
@@ -144,8 +165,24 @@ fun DetailScreen(
             isInitialCaptionSave = false
             toggleSaveActive = false
         }
+
+        sharedImage = if (captionEntity.image.startsWith("http")) {
+            withContext(Dispatchers.IO) {
+                ImageConverter.downloadImageToFile(
+                    context,
+                    captionEntity.image
+                )?.let { file ->
+                        fileToContentUri(context, file)
+                    }
+
+            }.toString()
+        } else {
+            captionEntity.image
+        }
+
         viewModel.getSession(context)
         viewModel.setCaptionEntity(captionEntity)
+
     }
     LaunchedEffect(
         captionText,
@@ -180,7 +217,6 @@ fun DetailScreen(
                 )
             }
         }
-
         is UiState.Success -> {
             val editedCaption = (editCaptionState as UiState.Success).data
             LaunchedEffect(editCaptionState) {
@@ -370,8 +406,11 @@ fun DetailScreen(
                 BasicAlertDialog(
                     onDismissRequest = { visibleModal = null },
                 ) {
+                    var error = generatedCaption.message.toString()
+                    if(error.contains("Server Busy")) error =
+                        stringResource(R.string.server_sibuk_silakan_coba_lagi)
                     TaskFailedModal(
-                        text = generatedCaption.message.toString(),
+                        text = error,
                         onClick = { visibleModal = null },
                     )
                 }
@@ -419,6 +458,10 @@ fun DetailScreen(
                     onDeviceChange = { device = it },
                     model = model,
                     onModelChange = { model = it },
+                    selectedStyle = selectedStyle,
+                    onStyleChange = { selectedStyle = it },
+                    selectedLanguage = selectedLanguage,
+                    onLanguageChange = {selectedLanguage = it},
                     isAuthorChecked = isAuthorChecked,
                     onAuthorCheckedChange = { isAuthorChecked = !isAuthorChecked },
                     isDateChecked = isDateChecked,
@@ -463,17 +506,20 @@ fun DetailScreen(
                     ) {
                         ShareList(
                             onClickShareWhatsApp = {
-                                captionState?.image?.let {
+                                sharedImage.let {
+                                    Log.d("TAG", "caption image: $it")
+                                    Log.d("TAG", "caption uri: ${it.toUri()}")
                                     shareToSpecificApp(
                                         context = context,
                                         packageName = SocialMediaPackage.WHATSAPP,
                                         text = captionText,
                                         imageUri = it.toUri()
+
                                     )
                                 }
                             },
                             onClickShareInstagram = {
-                                captionState?.image?.let {
+                                sharedImage.let {
                                     shareToSpecificApp(
                                         context = context,
                                         packageName = SocialMediaPackage.INSTAGRAM,
@@ -483,7 +529,7 @@ fun DetailScreen(
                                 }
                             },
                             onClickShareFacebook = {
-                                captionState?.image?.let {
+                                sharedImage.let {
                                     shareToSpecificApp(
                                         context = context,
                                         packageName = SocialMediaPackage.FACEBOOK,
@@ -537,7 +583,30 @@ fun DetailScreen(
                                     color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
                                     shape = RoundedCornerShape(16.dp)
                                 )
-                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                                .padding(horizontal = 16.dp, vertical = 4.dp)
+                                .constrainAs(notLoginText) {
+                                    bottom.linkTo(toolbar.top)
+                                    end.linkTo(toolbar.end)
+                                    start.linkTo(toolbar.start)
+                                }
+                        )
+                    }else {
+                        Text(
+                            text = if (!isInitialCaptionSave){
+                                stringResource(R.string.click_save_to_save_caption)
+                            } else{
+                                stringResource(R.string.click_saved_to_delete_caption)
+                            },
+
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            ),
+                            modifier = Modifier
+                                .background(
+                                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                    shape = RoundedCornerShape(16.dp)
+                                )
+                                .padding(horizontal = 16.dp, vertical = 4.dp)
                                 .constrainAs(notLoginText) {
                                     bottom.linkTo(toolbar.top)
                                     end.linkTo(toolbar.end)
@@ -563,16 +632,17 @@ fun DetailScreen(
                                 model = if (isModelChecked) model else "",
                                 image = captionEntity.image.toUri(),
                                 token = session.data.token,
+                                style = selectedStyle,
+                                languageCode = selectedLanguage,
                                 context = context
                             )
                         },
                         toogleSaveActive = toggleSaveActive,
                         isToogleSaveEnabled = isToggleSaveEnabled,
                         onSaveClicked = {
-                            if (!session.data.isLogin){
+                            if (!session.data.isLogin) {
                                 viewModel.login(context)
-                            }
-                            else{
+                            } else {
                                 if (!toggleSaveActive) {
                                     //Save
                                     if (!isInitialCaptionSave) {
@@ -605,8 +675,7 @@ fun DetailScreen(
                                             )
                                         }
                                     }
-                                }
-                                else {
+                                } else {
                                     //Delete
                                     captionState?.let {
                                         viewModel.deleteCaption(
@@ -648,6 +717,10 @@ fun DetailContent(
     onDeviceChange: (String) -> Unit,
     model: String,
     onModelChange: (String) -> Unit,
+    selectedStyle: String,
+    onStyleChange: (String) -> Unit,
+    selectedLanguage: String,
+    onLanguageChange: (String) -> Unit,
     // Checkbox states
     isAuthorChecked: Boolean,
     onAuthorCheckedChange: (Boolean) -> Unit,
@@ -667,8 +740,8 @@ fun DetailContent(
     var isZoomedOut by remember { mutableStateOf(true) }
     val clipboardManager = LocalClipboardManager.current
     var isCaptionLayoutVisible by remember { mutableStateOf(false) }
-
-
+    var isWritingStyleExpanded by remember { mutableStateOf(false) }
+    var isLanguageLayoutExpanded by remember { mutableStateOf(false) }
 
     LaunchedEffect(captionText) {
         if (captionText.isNotEmpty()) {
@@ -697,20 +770,8 @@ fun DetailContent(
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
     ) {
-        val (image, caption, textHelperZoom, textHelperMeta, metadata, space) = createRefs()
+        val (image, caption, writingStyle, textHelperMeta, metadata, space) = createRefs()
 
-        Text(
-            text = stringResource(R.string.pinch_to_zoom_image),
-            textAlign = TextAlign.Center,
-            fontSize = 14.sp,
-            modifier = Modifier
-                .constrainAs(textHelperZoom) {
-                    top.linkTo(image.bottom)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                }
-
-        )
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -730,7 +791,7 @@ fun DetailContent(
         ) {
             AsyncImage(
                 model = captionEntity.image,
-                contentDescription = null,
+                contentDescription = stringResource(R.string.image),
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -788,7 +849,7 @@ fun DetailContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .constrainAs(caption) {
-                    top.linkTo(textHelperZoom.bottom)
+                    top.linkTo(image.bottom)
                     start.linkTo(parent.start)
                     end.linkTo(parent.end)
                 }
@@ -820,46 +881,235 @@ fun DetailContent(
                     )
                 ),
             ) {
-                Card(
-                    shape = CardDefaults.elevatedShape,
-                    colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceVariant),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp)
-                        .testTag(TestTags.CAPTION_TEXT_LAYOUT),
-                ) {
-                    Row(
-                        modifier = Modifier,
-                        verticalAlignment = Alignment.CenterVertically
+                Column {
+                    Card(
+                        shape = CardDefaults.elevatedShape,
+                        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceVariant),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp)
+                            .testTag(TestTags.CAPTION_TEXT_LAYOUT),
                     ) {
-                        BasicTextField(
-                            value = captionText,
-                            onValueChange = onCaptionTextChange,
-                            minLines = 1,
-                            maxLines = 5,
-                            textStyle = MaterialTheme.typography.bodyLarge.copy(
-                                textAlign = TextAlign.Justify,
-                                color = MaterialTheme.colorScheme.onSurface
-                            ),
-                            modifier = Modifier
-                                .padding(8.dp)
-                                .fillMaxWidth()
-                                .weight(1f)
-                        )
-                        IconButton(
-                            onClick = {
-                                clipboardManager.setText(AnnotatedString(captionText))
+                        Row(
+                            modifier = Modifier,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            BasicTextField(
+                                value = captionText,
+                                onValueChange = onCaptionTextChange,
+                                minLines = 1,
+                                maxLines = 5,
+                                textStyle = MaterialTheme.typography.bodyLarge.copy(
+                                    textAlign = TextAlign.Justify,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                ),
+                                modifier = Modifier
+                                    .padding(8.dp)
+                                    .fillMaxWidth()
+                                    .weight(1f)
+                            )
+                            IconButton(
+                                onClick = {
+                                    clipboardManager.setText(AnnotatedString(captionText))
+                                },
+                                modifier = Modifier
+                                    .padding(0.dp)
+                                    .align(Alignment.CenterVertically)
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_copy),
+                                    contentDescription = stringResource(R.string.copy),
+                                    tint = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+                    }
+                    Text(
+                        text = stringResource(R.string.tap_the_caption_text_to_make_changes),
+                        textAlign = TextAlign.Center,
+                        fontSize = 14.sp,
+                        modifier = Modifier
+                            .padding(vertical = 4.dp)
+                            .align(Alignment.CenterHorizontally)
+                    )
+                }
+
+            }
+        }
+
+        ConstraintLayout(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(4.dp)
+                .constrainAs(writingStyle) {
+                    top.linkTo(caption.bottom)
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                }
+        ) {
+            val (title, writingsButtons, languagesButtons) = createRefs()
+
+            ConstraintLayout(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .constrainAs(title) {
+                        top.linkTo(parent.top)
+                        start.linkTo(parent.start)
+                        end.linkTo(parent.end)
+                    }
+            ) {
+                val (writingTitle, languagesTitle) = createRefs()
+                AnimatedExpandableTitleCard(
+                    title = stringResource(R.string.result_style),
+                    icon = Icons.Default.SignLanguage,
+                    expanded = isWritingStyleExpanded,
+                    otherExpanded = isLanguageLayoutExpanded,
+                    onToggle = {
+                        isLanguageLayoutExpanded = false
+                        isWritingStyleExpanded = !isWritingStyleExpanded
+                    },
+                    modifier = Modifier
+                        .constrainAs(writingTitle) {
+                            top.linkTo(parent.top)
+                            start.linkTo(parent.start)
+                            end.linkTo(languagesTitle.start)
+                            width = if (!isWritingStyleExpanded && !isLanguageLayoutExpanded) {
+                                Dimension.fillToConstraints
+                            } else if (isWritingStyleExpanded) {
+                                Dimension.fillToConstraints
+                            } else Dimension.wrapContent
+                        }
+                )
+
+                AnimatedExpandableTitleCard(
+                    title = stringResource(R.string.language),
+                    icon = Icons.Filled.GTranslate,
+                    expanded = isLanguageLayoutExpanded,
+                    otherExpanded = isWritingStyleExpanded,
+                    onToggle = {
+                        isWritingStyleExpanded = false
+                        isLanguageLayoutExpanded = !isLanguageLayoutExpanded
+                    },
+                    modifier = Modifier
+                        .constrainAs(languagesTitle) {
+                            top.linkTo(parent.top)
+                            start.linkTo(writingTitle.end)
+                            end.linkTo(parent.end)
+                            width = if (!isWritingStyleExpanded && !isLanguageLayoutExpanded) {
+                                Dimension.fillToConstraints
+                            } else if (isLanguageLayoutExpanded) {
+                                Dimension.fillToConstraints
+                            } else Dimension.wrapContent
+                        }
+                )
+            }
+
+
+            AnimatedVisibility(
+                visible = isWritingStyleExpanded,
+                enter = fadeIn() + expandVertically(),
+                exit = fadeOut() + shrinkVertically(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(4.dp)
+                    .constrainAs(writingsButtons) {
+                        top.linkTo(title.bottom)
+                        start.linkTo(parent.start)
+                    }
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    val styles = listOf(
+                        WritingStyle.FORMAL,
+                        WritingStyle.CASUAL,
+                        WritingStyle.POETICAL
+                    )
+                    styles.forEach { style ->
+                        val isSelected = selectedStyle == style
+                        FilterChip(
+                            selected = isSelected,
+                            onClick = { onStyleChange(style) },
+                            label = {
+                                Text(
+                                    text = style.replaceFirstChar { it.uppercase() },
+                                    style = MaterialTheme.typography.bodyLarge.copy(
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                    ),
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
+                                )
                             },
                             modifier = Modifier
-                                .padding(0.dp)
-                                .align(Alignment.CenterVertically)
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_copy),
-                                contentDescription = stringResource(R.string.copy),
-                                tint = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
+                                .padding(horizontal = 4.dp),
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                                containerColor = MaterialTheme.colorScheme.surface,
+                                selectedLabelColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                                labelColor = MaterialTheme.colorScheme.onSurface
+                            ),
+                            shape = RoundedCornerShape(12.dp),
+                            border = if (!isSelected) BorderStroke(
+                                1.dp,
+                                MaterialTheme.colorScheme.outline
+                            ) else null
+
+                        )
+                    }
+
+                }
+            }
+
+            AnimatedVisibility(
+                visible = isLanguageLayoutExpanded,
+                enter = fadeIn() + expandVertically(),
+                exit = fadeOut() + shrinkVertically(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(4.dp)
+                    .constrainAs(languagesButtons) {
+                        top.linkTo(title.bottom)
+                        start.linkTo(parent.start)
+                    }
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+
+                    val language = Language.getAllLanguages()
+
+                    language.forEach { language ->
+                        val isSelected = selectedLanguage == language.code
+                        FilterChip(
+                            selected = isSelected,
+                            onClick = { onLanguageChange(language.code) },
+                            label = {
+                                Text(
+                                    text = language.name.replaceFirstChar { it.uppercase() },
+                                    style = MaterialTheme.typography.bodyLarge.copy(
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                    ),
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
+                                )
+                            },
+                            modifier = Modifier
+                                .padding(horizontal = 4.dp),
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                                containerColor = MaterialTheme.colorScheme.surface,
+                                selectedLabelColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                                labelColor = MaterialTheme.colorScheme.onSurface
+                            ),
+                            shape = RoundedCornerShape(12.dp),
+                            border = if (!isSelected) BorderStroke(
+                                1.dp,
+                                MaterialTheme.colorScheme.outline
+                            ) else null
+
+                        )
                     }
                 }
             }
@@ -871,7 +1121,7 @@ fun DetailContent(
             fontSize = 14.sp,
             modifier = Modifier
                 .constrainAs(textHelperMeta) {
-                    top.linkTo(caption.bottom)
+                    top.linkTo(writingStyle.bottom)
                     start.linkTo(parent.start)
                     end.linkTo(parent.end)
                 }
@@ -890,7 +1140,9 @@ fun DetailContent(
             val (title, list) = createRefs()
             Card(
                 shape = RoundedCornerShape(8.dp),
-                colors = CardDefaults.cardColors(MaterialTheme.colorScheme.primary),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                ),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(4.dp)
@@ -904,6 +1156,7 @@ fun DetailContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 4.dp)
+                        .clickable { isMetadataExpanded = !isMetadataExpanded }
                 ) {
                     val (left, right) = createRefs()
                     Text(
@@ -954,74 +1207,85 @@ fun DetailContent(
                         end.linkTo(parent.end)
                     }
             ) {
-                Card(
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(4.dp),
-                    colors = CardDefaults.cardColors(MaterialTheme.colorScheme.tertiaryContainer)
-                ) {
-                    MetadataItem(
-                        label = stringResource(R.string.string_author),
-                        value = author,
-                        onValueChange = onAuthorChange,
-                        checked = isAuthorChecked,
-                        onCheckedChange = onAuthorCheckedChange
+                Column {
+                    Text(
+                        text = stringResource(R.string.tap_to_add_or_modify_image_data),
+                        textAlign = TextAlign.Center,
+                        fontSize = 14.sp,
+                        modifier = modifier
+                            .padding(vertical = 4.dp)
+                            .align(Alignment.CenterHorizontally)
                     )
-                    HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        thickness = 1.dp,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
+                    Card(
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(4.dp),
+                        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.tertiaryContainer)
+                    ) {
+                        MetadataItem(
+                            label = stringResource(R.string.string_author),
+                            value = author,
+                            onValueChange = onAuthorChange,
+                            checked = isAuthorChecked,
+                            onCheckedChange = onAuthorCheckedChange
+                        )
+                        HorizontalDivider(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            thickness = 1.dp,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
 
-                    MetadataDateItem(
-                        label = stringResource(R.string.string_date),
-                        value = selectedDate,
-                        onDatePickerClick = { showDatePicker = true },
-                        checked = isDateChecked,
-                        onCheckedChange = onDateCheckedChange
-                    )
+                        MetadataDateItem(
+                            label = stringResource(R.string.string_date),
+                            value = selectedDate,
+                            onDatePickerClick = { showDatePicker = true },
+                            checked = isDateChecked,
+                            onCheckedChange = onDateCheckedChange
+                        )
 
-                    HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        thickness = 1.dp,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
+                        HorizontalDivider(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            thickness = 1.dp,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
 
-                    MetadataItem(
-                        label = stringResource(R.string.location),
-                        value = location,
-                        onValueChange = onLocationChange,
-                        checked = isLocationChecked,
-                        onCheckedChange = onLocationCheckedChange
-                    )
-                    HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        thickness = 1.dp,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                    MetadataItem(
-                        label = stringResource(R.string.device),
-                        value = device,
-                        onValueChange = onDeviceChange,
-                        checked = isDeviceChecked,
-                        onCheckedChange = onDeviceCheckedChange
-                    )
-                    HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        thickness = 1.dp,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
+                        MetadataItem(
+                            label = stringResource(R.string.location),
+                            value = location,
+                            onValueChange = onLocationChange,
+                            checked = isLocationChecked,
+                            onCheckedChange = onLocationCheckedChange
+                        )
+                        HorizontalDivider(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            thickness = 1.dp,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                        MetadataItem(
+                            label = stringResource(R.string.device),
+                            value = device,
+                            onValueChange = onDeviceChange,
+                            checked = isDeviceChecked,
+                            onCheckedChange = onDeviceCheckedChange
+                        )
+                        HorizontalDivider(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            thickness = 1.dp,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
 
-                    MetadataItem(
-                        label = stringResource(R.string.model),
-                        value = model,
-                        onValueChange = onModelChange,
-                        checked = isModelChecked,
-                        onCheckedChange = onModelCheckedChange
-                    )
+                        MetadataItem(
+                            label = stringResource(R.string.model),
+                            value = model,
+                            onValueChange = onModelChange,
+                            checked = isModelChecked,
+                            onCheckedChange = onModelCheckedChange
+                        )
 
+                    }
                 }
+
             }
         }
 
@@ -1075,7 +1339,11 @@ fun DetailContentPreview() {
             isModelChecked = false,
             onModelCheckedChange = {},
             captionText = "",
-            onCaptionTextChange = {}
+            onCaptionTextChange = {},
+            selectedStyle = WritingStyle.CASUAL,
+            onStyleChange = {},
+            selectedLanguage = Language.English.code,
+            onLanguageChange = {}
         )
     }
 }

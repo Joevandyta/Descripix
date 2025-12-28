@@ -18,6 +18,6 @@ object TestTags {
 
     const val EDIT_ABOUT_ME = "EDIT_ABOUT_ME"
     const val EDIT_GENDER = "EDIT_GENDER"
-
+    const val BUTTON_SHARE = "BUTTON_SHARE"
     const val EDIT_PROFILE_SUBMIT = "EDIT_PROFILE_SUBMIT"
 }

@@ -2,11 +2,9 @@ package com.jovan.descripix.data.source.remote
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import androidx.core.net.toUri
-import com.jovan.descripix.BuildConfig
-import com.jovan.descripix.data.source.remote.network.ApiService
 import com.jovan.descripix.R
+import com.jovan.descripix.data.source.remote.network.ApiService
 import com.jovan.descripix.data.source.remote.request.CaptionRequest
 import com.jovan.descripix.data.source.remote.request.UserRequest
 import com.jovan.descripix.data.source.remote.response.ApiResponse
@@ -81,7 +79,6 @@ class RemoteDataSource @Inject constructor(
                     verifyResetJob = CoroutineScope(Dispatchers.Default).launch {
                         delay(5_000) // 60 seconds
                         isTokenAlreadyVerified = false
-                        Log.d("REPO", "Token verification expired 5 second.")
                     }
                 } else {
                     verifyResetJob?.cancel()
@@ -221,6 +218,7 @@ class RemoteDataSource @Inject constructor(
         languageCode: String,
         metadata: JSONObject,
         image: Uri,
+        style: String,
         context: Context
     ): ApiResponse<GenerateResponse> {
         val metadataBody =
@@ -255,6 +253,7 @@ class RemoteDataSource @Inject constructor(
                 languageCode = languageCode.toRequestBody(),
                 metadata = metadataBody,
                 image = multipartBody,
+                style = style.toRequestBody(),
                 token = context.getString(R.string.bearer, token)
             )
         }

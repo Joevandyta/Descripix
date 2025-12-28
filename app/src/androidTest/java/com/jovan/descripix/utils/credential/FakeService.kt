@@ -3,7 +3,6 @@ package com.jovan.descripix.utils.credential
 import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import androidx.core.net.toUri
 import com.jovan.descripix.FakeObject
 import com.jovan.descripix.R
@@ -15,7 +14,6 @@ class FakeService @Inject constructor(
 ) : IService {
     val token = FakeObject.testIdToken
     override suspend fun getGoogleIdToken(context: Context): String {
-        Log.d("FakeCredentialService", "getGoogleIdToken called")
         return token
     }
 

@@ -11,7 +11,6 @@ import com.jovan.descripix.data.source.remote.response.ApiResponse
 import com.jovan.descripix.data.source.remote.response.CaptionDataResponse
 import com.jovan.descripix.data.source.remote.response.GenerateResponse
 import com.jovan.descripix.data.source.remote.response.LoginResponse
-import com.jovan.descripix.ui.common.Language
 import kotlinx.coroutines.flow.Flow
 import org.json.JSONObject
 
@@ -40,7 +39,7 @@ interface DescripixUseCase {
 
     suspend fun editCaption(id: Int, captionRequest: CaptionRequest, token: String, context: Context): ApiResponse<Unit>
 
-    suspend fun generateCaption(token: String, languageCode: String, metadata: JSONObject, image: Uri, context: Context) : ApiResponse<GenerateResponse>
+    suspend fun generateCaption(token: String, languageCode: String, metadata: JSONObject, image: Uri, style: String, context: Context) : ApiResponse<GenerateResponse>
 
     suspend fun getCaptionDetails(id: Int, token: String, context: Context) : ApiResponse<CaptionDataResponse>
 

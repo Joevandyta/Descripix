@@ -183,7 +183,6 @@ class DescripixRepository @Inject constructor(
         }
     }.distinctUntilChanged()
 
-
     override suspend fun getUserDetail(
         isConnected: Boolean,
         refreshToken: String,
@@ -269,10 +268,11 @@ class DescripixRepository @Inject constructor(
         languageCode: String,
         metadata: JSONObject,
         image: Uri,
+        style: String,
         context: Context
     ): ApiResponse<GenerateResponse> {
         wrapEspressoIdlingResource {
-            return remoteDataSource.generateCaption(token, languageCode, metadata, image, context)
+            return remoteDataSource.generateCaption(token, languageCode, metadata, image, style, context)
         }
     }
 

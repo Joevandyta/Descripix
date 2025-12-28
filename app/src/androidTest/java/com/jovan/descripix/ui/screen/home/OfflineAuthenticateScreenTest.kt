@@ -61,6 +61,14 @@ class OfflineAuthenticateScreenTest {
 
         IdlingRegistry.getInstance().register(EspressoIdlingResource.countingIdlingResource)
 
+    }
+
+    @After
+    fun teardown() {
+        mockWebServer.shutdown()
+        IdlingRegistry.getInstance().unregister(EspressoIdlingResource.countingIdlingResource)
+    }
+    private fun launchScreen(){
         composeRule.setContent {
             DescripixTheme {
                 navController = TestNavHostController(LocalContext.current)
@@ -68,7 +76,9 @@ class OfflineAuthenticateScreenTest {
                 DescripixApp(navController = navController)
             }
         }
-
+    }
+    @Test
+    fun home_authenticated_offlineMode_displaysTemporaryCaptions(){
         runBlocking {
             userPreference.saveSession(
                 SessionData(
@@ -79,16 +89,8 @@ class OfflineAuthenticateScreenTest {
             )
             captionDao.insert(FakeObject.listDummy)
         }
-    }
 
-    @After
-    fun teardown() {
-        mockWebServer.shutdown()
-        IdlingRegistry.getInstance().unregister(EspressoIdlingResource.countingIdlingResource)
-    }
-
-    @Test
-    fun home_authenticated_offlineMode_displaysTemporaryCaptions(){
+        launchScreen()
 
         composeRule.onNodeWithTag(TestTags.HOME_AUTH_SCREEN).assertExists()
         composeRule.onNodeWithText("offline caption 1").assertExists("Caption not found")

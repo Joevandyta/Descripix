@@ -21,7 +21,6 @@ fun shareContent(
     }
     context.startActivity(Intent.createChooser(intent, chooserTitle))
 }
-
 fun shareToSpecificApp(
     context: Context,
     packageName: String,

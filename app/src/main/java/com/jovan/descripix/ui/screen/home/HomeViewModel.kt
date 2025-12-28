@@ -1,6 +1,7 @@
 package com.jovan.descripix.ui.screen.home
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jovan.descripix.R
@@ -70,6 +71,7 @@ class HomeViewModel @Inject constructor(
         _loginState.value = UiState.Loading
         viewModelScope.launch {
             try {
+                Log.d("credentialManager", context.getString(R.string.client_id))
                 val idToken = credentialService.getGoogleIdToken(context)
                 val loginResult = descripixUseCase.login(idToken, context)
                 _loginState.value = UiState.Success(loginResult)
