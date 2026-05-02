@@ -1,6 +1,7 @@
 # Descripix 📸✨
 
-![Descripix Banner](C:\Users\joeva\.gemini\antigravity\brain\6db457ac-6dd6-414f-b220-866da34ad150\descripix_banner_1777741033306.png)
+<img width="1600" height="400" alt="Banner" src="https://github.com/user-attachments/assets/ab81e578-b34c-43ec-b13d-db93713c8fc0" />
+
 
 **Descripix** is a premium Android application that leverages Artificial Intelligence to breathe life into your photos. By automatically generating descriptive, creative, and context-aware captions, Descripix helps you tell the story behind every pixel.
 
@@ -30,18 +31,23 @@ Descripix is built with a focus on performance, scalability, and clean code prin
 | **Networking** | Retrofit, OkHttp, GSON |
 | **Persistence** | Room Database, DataStore, SQLCipher (Encrypted) |
 | **Metadata** | Metadata Extractor (EXIF) |
-| **Auth** | Firebase Auth, Google Play Services |
+| **Auth** | Google Oauth 2.0, Google Play Services |
 
 ---
+<div align="center">
 
 ## 📸 Screenshots
 
-![Descripix Mockup] <img width="1994" height="1779" alt="Home" src="https://github.com/user-attachments/assets/37f6ab10-0af1-46c6-8841-d9539793dc6a" />
+### Home Screen
+<img width="500" alt="Home" src="https://github.com/user-attachments/assets/37f6ab10-0af1-46c6-8841-d9539793dc6a" />
 
-![Descripix Mockup] <img width="1994" height="1779" alt="Home" src="https://github.com/user-attachments/assets/37f6ab10-0af1-46c6-8841-d9539793dc6a" />
+### Details Screen
+<img width="500" alt="Detail" src="https://github.com/user-attachments/assets/1cd1c701-74e1-4f19-8d06-ddfbc25faccb" />
 
-![Descripix Mockup] <img width="1994" height="1779" alt="Home" src="https://github.com/user-attachments/assets/37f6ab10-0af1-46c6-8841-d9539793dc6a" />
+### Profile Screen
+<img width="500" alt="Profile" src="https://github.com/user-attachments/assets/330ff05a-84e5-42f6-921a-4d6dd2097fd8" />
 
+</div>
 
 ---
 
