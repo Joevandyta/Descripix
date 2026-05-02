@@ -36,7 +36,12 @@ Descripix is built with a focus on performance, scalability, and clean code prin
 
 ## 📸 Screenshots
 
-![Descripix Mockup](C:\Users\joeva\.gemini\antigravity\brain\6db457ac-6dd6-414f-b220-866da34ad150\descripix_mockup_1777741144276.png)
+![Descripix Mockup] <img width="1994" height="1779" alt="Home" src="https://github.com/user-attachments/assets/37f6ab10-0af1-46c6-8841-d9539793dc6a" />
+
+![Descripix Mockup] <img width="1994" height="1779" alt="Home" src="https://github.com/user-attachments/assets/37f6ab10-0af1-46c6-8841-d9539793dc6a" />
+
+![Descripix Mockup] <img width="1994" height="1779" alt="Home" src="https://github.com/user-attachments/assets/37f6ab10-0af1-46c6-8841-d9539793dc6a" />
+
 
 ---
 
