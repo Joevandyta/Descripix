@@ -3,7 +3,7 @@
 <img width="1600" height="400" alt="Banner" src="https://github.com/user-attachments/assets/ab81e578-b34c-43ec-b13d-db93713c8fc0" />
 
 
-**Descripix** is a premium Android application that leverages Artificial Intelligence to breathe life into your photos. By automatically generating descriptive, creative, and context-aware captions, Descripix helps you tell the story behind every pixel.
+**Descripix** is a Android application that leverages Artificial Intelligence to breathe life into your photos. By automatically generating descriptive, creative, and context-aware captions, Descripix helps you tell the story behind every pixel.
 
 ---
 
@@ -32,6 +32,15 @@ Descripix is built with a focus on performance, scalability, and clean code prin
 | **Persistence** | Room Database, DataStore, SQLCipher (Encrypted) |
 | **Metadata** | Metadata Extractor (EXIF) |
 | **Auth** | Google Oauth 2.0, Google Play Services |
+| **Backend** | Django, Django REST Framework, PostgreSQL |
+
+---
+
+## 🔗 Related Repository
+| Repository | Description |
+| :--- | :--- |
+| [Descripix Android](https://github.com/Joevandyta/Descripix) | Android frontend (this repo) |
+| [Backend-Descripix](https://github.com/Joevandyta/Backend-Descripix) | Django REST API backend for storing and managing caption data |
 
 ---
 <div align="center">
