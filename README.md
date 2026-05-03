@@ -95,6 +95,6 @@ Contributions are welcome! If you have suggestions for new features or improveme
 ---
 
 <p align="center">
-  Made with ❤️ by <a href="https://github.com/Joevandyta">Jovan</a>
+  Made with 🔥 by <a href="https://github.com/Joevandyta">Jovan</a>
 </p>
 
