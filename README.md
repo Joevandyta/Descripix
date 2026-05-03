@@ -1,7 +1,6 @@
 # Descripix 📸✨
 
-<img width="1600" height="400" alt="Banner" src="https://github.com/user-attachments/assets/ab81e578-b34c-43ec-b13d-db93713c8fc0" />
-
+<img width="1600" height="400" alt="Marine Life Biology Quiz Google Forms Header in Blue Handdrawn Style" src="https://github.com/user-attachments/assets/d7fc3e97-0497-472e-82fd-b601e6c089e2" />
 
 **Descripix** is a Android application that leverages Artificial Intelligence to breathe life into your photos. By automatically generating descriptive, creative, and context-aware captions, Descripix helps you tell the story behind every pixel.
 
